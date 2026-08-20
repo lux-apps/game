@@ -1,8 +1,0 @@
-[build]
-  command = "yarn run build:lux"
-  publish = "client/build"
-
-[[redirects]]
-  from = "/*"
-  to = "/"
-  status = 200
