@@ -19,29 +19,26 @@ class Stats extends React.Component {
       totalCreated: 0,
       totalFailures: 0,
       totalPlayers: 0,
-      chainId: 0,
       lang: localStorage.getItem("lang"),
-    }
-
-    if (this.props.connected) {
-      window.ethereum.request({ method: 'eth_chainId' }).then((id) => {
-        this.setState({ chainId: Number(id) });
-      });
     }
   }
 
-  componentDidUpdate(prevProps, prevState ) {
-    if (this.props.connected && prevProps.connected !== this.props.connected) {
+  componentDidMount() {
+    if (this.props.networkId) this.collectsGlobalStats();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.networkId && prevProps.networkId !== this.props.networkId) {
       this.collectsGlobalStats();
     }
   }
 
   async collectsGlobalStats() {
     const [completed, created, failures, totalPlayers] = await Promise.all([
-      getTotalCompleted(this.state.chainId),
-      getTotalCreated(this.state.chainId),
-      getTotalFailures(this.state.chainId),
-      getTotalPlayers(this.state.chainId)
+      getTotalCompleted(this.props.networkId),
+      getTotalCreated(this.props.networkId),
+      getTotalFailures(this.props.networkId),
+      getTotalPlayers(this.props.networkId)
     ])
     this.setState({
       totalCompleted: Number(completed ?? 0),
@@ -52,9 +49,9 @@ class Stats extends React.Component {
   }
 
   async collectPlayerStats(playerAddress) {
-    var itExists = await checkIfPlayerExist(playerAddress, this.state.chainId)
+    var itExists = await checkIfPlayerExist(playerAddress, this.props.networkId)
       if(itExists) {
-        var levels = await getLevelsSolvedByPlayer(playerAddress, this.state.chainId)
+        var levels = await getLevelsSolvedByPlayer(playerAddress, this.props.networkId)
         
         //loader off
         const elements = document.querySelectorAll('.progress-bar-wrapper');
@@ -150,7 +147,7 @@ class Stats extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    connected: state.network.connected,
+    networkId: state.network.networkId,
   }
 }
 

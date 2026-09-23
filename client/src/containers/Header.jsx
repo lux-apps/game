@@ -17,17 +17,10 @@ class Header extends React.Component {
     this.state = {
       dark: false,
       lang: localStorage.getItem("lang"),
-      chainId: 0,
       activeDropdown: null,
       multiDDOpen: false,
     };
     this.containerRef = createRef();
-
-    if (this.props.connected) {
-      window.ethereum.request({ method: "eth_chainId" }).then((id) => {
-        this.setState({ chainId: Number(id) });
-      });
-    }
   }
 
   setActiveTab(tabIndex) {
@@ -304,7 +297,7 @@ class Header extends React.Component {
                   <div className={this.getDDClassName(2)}>
                     {Object.values(constants.NETWORKS).map((network, index) => {
                       if (network && network.name !== "local") {
-                        if (Number(network.id) === this.state.chainId)
+                        if (Number(network.id) === this.props.networkId)
                           return false; // filter out current network
                         return (
                           <div key={index}
@@ -399,6 +392,7 @@ class Header extends React.Component {
 function mapStateToProps(state) {
   return {
     connected: state.network.connected,
+    networkId: state.network.networkId,
     allLevelsCompleted: state.player.allLevelsCompleted,
   };
 }

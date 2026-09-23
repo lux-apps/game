@@ -21,13 +21,7 @@ class App extends React.Component {
   constructor() {
     super();
     this.state = {
-      chainId: 0,
     };
-    if (window.ethereum) {
-      window.ethereum.request({ method: "eth_chainId" }).then((id) => {
-        this.setState({ chainId: Number(id) });
-      });
-    }
   }
 
   componentDidUpdate(prevProps) {
@@ -111,7 +105,7 @@ class App extends React.Component {
           </section>
           {/*not Deployed window*/}
           <div className="deploy-window-bg">
-            {!networkOnDeprecationOrDeprecated(this.state.chainId) ? (
+            {!networkOnDeprecationOrDeprecated(this.props.networkId) ? (
               <div className="deploy-window">
                 {/*deploy window*/}
                 <h1>{randGoodIcon()}</h1>
@@ -135,7 +129,7 @@ class App extends React.Component {
                 {/*deprecation window*/}
                 <h1>{randBadIcon()}</h1>
                 <h1>
-                  {isDeprecatedNetwork(this.state.chainId)? strings.deprecatedNetwork : strings.networkBeingDeprecated}
+                  {isDeprecatedNetwork(this.props.networkId)? strings.deprecatedNetwork : strings.networkBeingDeprecated}
                 </h1>
                 <br />
                 {strings.deployMessage}
@@ -144,7 +138,7 @@ class App extends React.Component {
                   <button className="buttons" onClick={switchToSepolia}>
                     {strings.switchToSepolia}
                   </button>
-                  {!isDeprecatedNetwork(this.state.chainId) && 
+                  {!isDeprecatedNetwork(this.props.networkId) && 
                     <button className="buttons" onClick={continueAnyway}>
                       {strings.continueAnyway}
                     </button>
@@ -174,6 +168,7 @@ function mapStateToProps(state) {
   return {
     levels: state.gamedata.levels,
     completedLevels: state.player.completedLevels,
+    networkId: state.network.networkId,
   };
 }
 
