@@ -2,17 +2,26 @@ name: Test
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request: {}
 
 jobs:
   test:
-    runs-on: lux-build-amd64
+    strategy:
+      matrix:
+        runner: [linux-amd64, linux-arm64]
+    runs-on: ${{ matrix.runner }}
     steps:
     - uses: actions/checkout@v5
+      with:
+        submodules: recursive
     - uses: actions/setup-node@v5
       with:
         node-version-file: .nvmrc
-    - run: yarn
+    - uses: foundry-rs/foundry-toolchain@v1
+      with:
+        version: v1.8.3
+    - run: corepack enable
+    - run: yarn install --frozen-lockfile
     - run: yarn test:contracts
     - run: yarn test:client
