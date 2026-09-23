@@ -38,7 +38,7 @@ Este é o principal contrato inteligente do jogo. Você não precisa interagir c
 Vá em frente e expanda o objeto lux para ver o que tem dentro.
 
 #### 5. Interaja com a ABI
-`lux` é um objeto `TruffleContract` que envolve o contrato `Lux.sol` que foi implementado na blockchain.
+`lux` é um objeto de contrato que envolve o contrato `Lux.sol` que foi implementado na blockchain.
 
 Entre outras coisas, a ABI do contrato expõe todos os métodos públicos do `Lux.sol`, tal como `owner`. Digite o seguinte comando como exemplo:
 

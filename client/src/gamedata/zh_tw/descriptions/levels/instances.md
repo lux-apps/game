@@ -47,7 +47,7 @@ lux
 
 &nbsp;
 #### 5. 和 ABI 互動
-`lux` 是一個 `TruffleContract` 物件， 它包裝了部署在區塊鏈上的 `Lux.sol` 合約。
+`lux` 是一個合約物件， 它包裝了部署在區塊鏈上的 `Lux.sol` 合約。
 
 除此之外，合約的 ABI 還提供了所有的 `Lux.sol` 公開方法(public methods)，比如說 `owner`. 試試看輸入以下指令：
 ```

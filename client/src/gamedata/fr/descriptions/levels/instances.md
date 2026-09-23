@@ -43,7 +43,7 @@ Allez-y étendez l'objet éthernaut pour voir ce qu'il y a dedans.
 
 &nbsp;
 #### 5. Interagir avec l'ABI
-`lux` est un objet `TruffleContract` qui englobe le contrat `Lux.sol` qui a été déployé dans la blockchain.
+`lux` est un objet de contrat qui englobe le contrat `Lux.sol` qui a été déployé dans la blockchain.
 
 Entre autres, l'ABI du contrat expose toutes les méthodes publiques de `Lux.sol`, telles que `owner`. Tapez par exemple la commande suivante :
 ```

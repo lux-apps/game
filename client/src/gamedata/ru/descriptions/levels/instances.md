@@ -43,7 +43,7 @@
 
 #### 5. Interact with the ABI
 
-`lux` is a `TruffleContract` object that wraps the `Lux.sol` contract that has been deployed to the blockchain.
+`lux` is a contract object that wraps the `Lux.sol` contract that has been deployed to the blockchain.
 
 Among other things, the contract's ABI exposes all of `Lux.sol`'s public methods, such as `owner`. Type the following command for example:
 

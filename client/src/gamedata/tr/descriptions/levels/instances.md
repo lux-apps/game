@@ -44,7 +44,7 @@ Devam edin ve içerde ne olduğunu görmek için lux nesnesini genişletin.
 
 &nbsp;
 #### 5. ABI ile etkileşim kurun
-`lux`, blok zincirine dağıtılan `Lux.sol` sözleşmesini saran bir `TruffleContract` nesnesidir.
+`lux`, blok zincirine dağıtılan `Lux.sol` sözleşmesini saran bir sözleşme nesnesidir.
  
 Diğer şeylerin yanı sıra, sözleşmenin ABI'si, `Lux.sol`'ün  `owner` gibi tüm genel yöntemlerini ortaya çıkarır. Örneğin aşağıdaki komutu yazın:
 ```
