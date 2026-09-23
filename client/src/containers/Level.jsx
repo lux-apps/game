@@ -123,14 +123,14 @@ class Level extends React.Component {
       constants.SHOW_ALL_COMPLETE_DESCRIPTIONS || levelCompleted;
 
     let description = null;
-    let language = localStorage.getItem("lang");
+    // No language picked yet means English.
+    let language = localStorage.getItem("lang") || "en";
     let strings = loadTranslations(language);
     let isDescriptionMissingTranslation = false;
 
     description = describe(language, level.description);
     if (!description) {
-      // language is null until one is picked, which means English
-      if (language) isDescriptionMissingTranslation = true;
+      isDescriptionMissingTranslation = true;
       description = describe("en", level.description);
     }
     let completedDescription = null;
