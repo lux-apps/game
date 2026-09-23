@@ -5,7 +5,7 @@ import {
   restoreContract,
   updateCachedContract,
 } from "./contractutil";
-import { CORE_CONTRACT_NAMES, ID_TO_NETWORK } from "../constants.js";
+import { CORE_CONTRACT_NAMES, ID_TO_NETWORK } from "../constants";
 import { loadTranslations } from "../utils/translations";
 
 const logger = (text) => {
@@ -97,18 +97,13 @@ export async function deployAdminContracts() {
   }
 }
 
-export const getDeployData = (networkId) => {
-  const active_network = ID_TO_NETWORK[networkId];
-  const network = active_network;
-  let gameData = {};
+// Addresses written by contracts/script/Deploy.s.sol, one file per network.
+const deployments = import.meta.glob("../gamedata/deploy.*.json", {
+  eager: true,
+  import: "default",
+});
 
-  try {
-    // try importing the game data file
-    gameData = require(`../gamedata/deploy.${network}.json`);
-  } catch (err) {
-    // if there's an error then check localstorage if data exists for this chain
-    gameData = restoreContract(networkId);
-  }
-
-  return gameData;
-};
+// The bundled deployment of a network, or else what this browser deployed.
+export const getDeployData = (networkId) =>
+  deployments[`../gamedata/deploy.${ID_TO_NETWORK[networkId]}.json`] ??
+  restoreContract(networkId);

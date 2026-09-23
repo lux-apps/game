@@ -27,7 +27,6 @@ const Stats = nonlazy(import("./containers/Stats"));
 Sentry.init({
   dsn: constants.SENTRY_DSN,
   debug: false,
-  tunnel: "/errors",
   integrations: [new Integrations.BrowserTracing()],
   tracesSampleRate: 1.0,
   release: constants.VERSION,

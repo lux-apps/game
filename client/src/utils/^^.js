@@ -2,7 +2,7 @@ import * as ethutil from './ethutil'
 import { createRainbow } from 'rainbow-color'
 import { rgbaString } from 'color-map'
 import { loadTranslations } from './translations'
-const constants = require(`../constants`)
+import * as constants from '../constants'
 let language = localStorage.getItem('lang')
 let strings = loadTranslations(language)
 

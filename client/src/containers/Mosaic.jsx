@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import * as constants from '../constants';
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import getlevelsdata from '../utils/getlevelsdata';
+import getlevelsdata, { levelImageFallback } from '../utils/getlevelsdata';
 //import moment from 'moment'
 
 class Mosaic extends React.Component {
@@ -33,7 +33,7 @@ class Mosaic extends React.Component {
               }
             >
               <div className="content_img">
-                <img className='level-tile' alt="" src={level.src} />
+                <img className='level-tile' alt="" src={level.src} onError={levelImageFallback(level.fallback)} />
                 <div>
                   {`${level.completed ? ' ✔' : ''}`}{' '}
                   {level.name}

@@ -1,11 +1,11 @@
-export function loadTranslations(language) {
-    let translations = null;
-    try { 
-        translations = require(`../gamedata/${language}/strings.json`)
-      } catch(e){
-        translations = require(`../gamedata/en/strings.json`)
-        if(!translations) throw new Error("Can't load translations")
-    }
+const translations = import.meta.glob("../gamedata/*/strings.json", {
+  eager: true,
+  import: "default",
+});
 
-    return translations;
+export function loadTranslations(language) {
+  return (
+    translations[`../gamedata/${language}/strings.json`] ??
+    translations["../gamedata/en/strings.json"]
+  );
 }

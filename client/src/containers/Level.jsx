@@ -9,11 +9,20 @@ import * as actions from "../actions";
 import * as constants from "../constants";
 import { loadTranslations } from "../utils/translations";
 import { Link } from "react-router-dom";
-import getlevelsdata from "../utils/getlevelsdata";
+import getlevelsdata, { levelImageFallback } from "../utils/getlevelsdata";
 import { withRouter } from "../hoc/withRouter";
 import { getLevelKey } from "../utils/contractutil";
 import { deployAndRegisterLevel } from "../utils/deploycontract";
 import { svgFilter } from "../utils/svg";
+import { levelSource } from "../utils/artifacts";
+
+// Level descriptions per language, loaded when a level opens.
+const descriptions = import.meta.glob("../gamedata/*/descriptions/levels/*.md", {
+  query: "?raw",
+  import: "default",
+});
+const describe = (language, file) =>
+  descriptions[`../gamedata/${language}/descriptions/levels/${file}`];
 
 class Level extends React.Component {
   constructor(props) {
@@ -118,34 +127,27 @@ class Level extends React.Component {
     let strings = loadTranslations(language);
     let isDescriptionMissingTranslation = false;
 
-    try {
-      description = require(`../gamedata/${language}/descriptions/levels/${level.description}`);
-    } catch (e) {
-      //FIX-ME: If language selected is english then "language" variable is null and not "en"
-      if (language) isDescriptionMissingTranslation = true; // Only set it if language is not null (i.e. some language different from english)
-      description = require(`../gamedata/en/descriptions/levels/${level.description}`);
+    description = describe(language, level.description);
+    if (!description) {
+      // language is null until one is picked, which means English
+      if (language) isDescriptionMissingTranslation = true;
+      description = describe("en", level.description);
     }
     let completedDescription = null;
 
     let isCompleteDescriptionMissingTranslation = false;
     if (showCompletedDescription && level.completedDescription) {
-      try {
-        completedDescription = require(`../gamedata/${language}/descriptions/levels/${level.completedDescription}`);
-      } catch (e) {
+      completedDescription = describe(language, level.completedDescription);
+      if (!completedDescription) {
         isCompleteDescriptionMissingTranslation = true;
-        completedDescription = require(`../gamedata/en/descriptions/levels/${level.completedDescription}`);
+        completedDescription = describe("en", level.completedDescription);
       }
     }
 
     let poweredBy =
       level.poweredBy?.src && level.poweredBy?.href ? level.poweredBy : null;
 
-    let sourcesFile = null;
-    try {
-      sourcesFile = require(`contracts/contracts/levels/${level.instanceContract}`);
-    } catch (e) {
-      console.log(e);
-    }
+    const sourcesFile = levelSource(level.instanceContract);
 
     const nextLevelId = findNextLevelId(this.props.level, this.props.levels);
 
@@ -205,6 +207,7 @@ class Level extends React.Component {
               alt=""
               className="level-tile level-img-view"
               src={selectedLevel.src}
+              onError={levelImageFallback(selectedLevel.fallback)}
             />
           </section>
 

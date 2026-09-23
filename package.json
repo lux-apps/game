@@ -21,7 +21,7 @@
     "upgrade:proxy": "cd contracts && forge script script/Upgrade.s.sol --broadcast --rpc-url ${RPC_URL:-http://127.0.0.1:8545}",
     "network": "anvil --chain-id 1337",
     "build:game": "yarn compile:contracts && yarn --cwd client build",
-    "start:game": "cd client && yarn start",
+    "start:game": "yarn --cwd client dev",
     "test:contracts": "cd contracts && forge test"
   }
 }

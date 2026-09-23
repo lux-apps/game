@@ -1,11 +1,8 @@
-import dotenv from "dotenv";
 import { localhost, sepolia } from "viem/chains";
 
-dotenv.config();
-
-export const DEBUG = process.env.NODE_ENV !== "production";
+export const DEBUG = import.meta.env.DEV;
 export const DEBUG_REDUX = DEBUG;
-export const SENTRY_DSN = process.env.REACT_APP_SENTRY_DSN;
+export const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
 
 // Networks the game runs on. `chain` is what the wallet is asked to switch
 // to; `explorer` verifies level instances.
@@ -21,7 +18,7 @@ export const NETWORKS = {
     id: "11155111",
     chain: sepolia,
     explorer: {
-      apiKey: `${process.env.REACT_APP_SEPOLIA_EXPLORER_API_KEY}`,
+      apiKey: import.meta.env.VITE_SEPOLIA_EXPLORER_API_KEY,
       apiHost: `https://api-sepolia.etherscan.io`,
     },
   },

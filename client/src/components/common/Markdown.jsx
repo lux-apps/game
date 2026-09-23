@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactMarkdown from 'react-markdown'
-import loadText from '../../utils/textloader'
 
+// Renders `target`: markdown text, or a loader resolving to it.
 class Markdown extends React.Component {
 
   constructor() {
@@ -19,7 +19,6 @@ class Markdown extends React.Component {
 
   componentWillUnmount() {
     this._isMounted = false
-    
   }
 
   async componentDidUpdate() {
@@ -28,14 +27,10 @@ class Markdown extends React.Component {
 
   async loadContents(target) {
     if(!this._isMounted) return
-    let targetText = typeof target == 'string' ? target : target.default;
-    if(this.state.target === targetText) return
-    try {
-      const text = /md?$/.test(targetText) ?  await loadText(targetText) : targetText;
-      this.setState({ target: targetText, source: text })
-    } catch(error) {
-      this.setState({source: undefined})
-    }
+    if(this.state.target === target) return
+    this.setState({ target })
+    const source = typeof target === 'function' ? await target() : target
+    if(this._isMounted && this.props.target === target) this.setState({ source })
   }
 
   render() {

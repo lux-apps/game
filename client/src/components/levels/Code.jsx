@@ -1,5 +1,4 @@
 import React from 'react'
-import loadText from '../../utils/textloader'
 import 'highlight.js/styles/vs2015-css.mjs'
 import hljs from 'highlight.js'
 
@@ -34,21 +33,13 @@ class Code extends React.Component {
     }
   }
 
+  // `target` is a loader resolving to the source text.
   async loadContents(target) {
     if (!this._isMounted) return;
-    let targetText = typeof target == 'string' ? target : target.default;
-    if(this.state.target === targetText) return
-    try {
-      const text = await loadText(targetText);
-      this.setState({
-        target: targetText,
-        source: text,
-      });
-    } catch (e) {
-      this.setState({
-        source: undefined,
-      });
-    }
+    if (this.state.target === target) return;
+    this.setState({ target });
+    const source = await target();
+    if (this._isMounted && this.props.target === target) this.setState({ source });
   }
 
   render() {

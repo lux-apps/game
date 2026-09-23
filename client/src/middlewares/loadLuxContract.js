@@ -1,5 +1,5 @@
 import { loadContract } from '../utils/ethutil'
-import { abi as luxAbi } from 'contracts/out/Lux.sol/Lux.json'
+import { abi as luxAbi } from '../../../contracts/out/Lux.sol/Lux.json'
 import * as actions from '../actions';
 import { loadTranslations } from '../utils/translations'
 

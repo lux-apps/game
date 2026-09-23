@@ -1,10 +1,12 @@
 import { isAddress } from "viem";
 import * as constants from "../constants";
 import { contractAt, getNetworkFromId, getNetworkId } from "./ethutil";
-import { loadArtifact } from "./artifacts";
+import { levelSource, loadArtifact } from "./artifacts";
 import { newGithubIssueUrl } from "./github";
 import { deployAdminContracts, deployAndRegisterLevel } from "./deploycontract";
-var levels = require(`../gamedata/gamedata.json`).levels;
+import gamedata from "../gamedata/gamedata.json";
+
+const { levels } = gamedata;
 
 
 // -- storage
@@ -146,11 +148,10 @@ export const deployRemainingContracts = async () => {
 
 export const verifyContract = async (contractAddress, level, chainId) => {
   const network = getNetworkFromId(chainId);
-  if (!network.explorer || !level.verificationDetails)
+  if (!network?.explorer?.apiKey || !level.verificationDetails)
     return;
 
-  const contractFile = await fetch(`contracts/levels/${level.instanceContract}`);
-  const contractCode = await contractFile.text();
+  const contractCode = await levelSource(level.instanceContract)();
 
   const headers = new Headers();
   headers.append("Content-Type", "application/x-www-form-urlencoded");

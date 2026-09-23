@@ -5,10 +5,10 @@ import { useEffect, useState, useCallback } from "react";
 import ReactPaginate from 'react-paginate';
 import Search from "../components/leaderboard/Search";
 import { getNetworkNamefromId } from "../utils/ethutil";
-import { NETWORKS } from "client/src/constants";
+import { NETWORKS } from "../constants";
 import Footer from "../components/common/Footer";
 import axios from "axios";
-import { ALIAS_PATH, getLeaderboardPath } from "client/src/constants";
+import { ALIAS_PATH, getLeaderboardPath } from "../constants";
 
 const playersPerPage = 20;
 
