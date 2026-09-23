@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity <0.7.0;
+pragma solidity 0.8.37;
 
-import "./base/Level-06.sol";
+import "./base/Level.sol";
 import "./Motorbike.sol";
-import "openzeppelin-contracts-06/utils/Address.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 contract MotorbikeFactory is Level {
 
@@ -38,6 +38,6 @@ contract MotorbikeFactory is Level {
 
   function validateInstance(address payable _instance, address _player) public override returns (bool) {
     _player;
-    return !Address.isContract(engines[_instance]);
+    return engines[_instance].code.length == 0;
   }
 }

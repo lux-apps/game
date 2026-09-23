@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity 0.8.37;
 
-import "openzeppelin-contracts-08/proxy/Proxy.sol";
-import "openzeppelin-contracts-08/utils/Address.sol";
+import "@openzeppelin/contracts/proxy/Proxy.sol";
 
 /**
  * 
@@ -69,7 +68,7 @@ contract UpgradeableProxy is Proxy {
      * @dev Stores a new address in the EIP1967 implementation slot.
      */
     function _setImplementation(address newImplementation) private {
-        require(Address.isContract(newImplementation), "UpgradeableProxy: new implementation is not a contract");
+        require(newImplementation.code.length > 0, "UpgradeableProxy: new implementation is not a contract");
 
         bytes32 slot = _IMPLEMENTATION_SLOT;
 

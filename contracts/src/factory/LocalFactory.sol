@@ -1,45 +1,53 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-// import all the abi's required to deploy
-import {Ownable} from "openzeppelin-contracts-08/access/Ownable.sol";
-import {Game} from "../Game.sol";
+pragma solidity 0.8.37;
+
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
+import {Lux} from "../Lux.sol";
 import {Statistics} from "../metrics/Statistics.sol";
 import {ProxyStats} from "../proxy/ProxyStats.sol";
-import {ProxyAdmin} from "../proxy/ProxyAdmin.sol";
 import {Level} from "../levels/base/Level.sol";
 
-// deploy all the nexessary contract in steps
+/// @dev One-shot deployer for the four core contracts, used by the client for
+/// in-browser local deployments. The transparent proxy creates its own
+/// ProxyAdmin (OpenZeppelin v5); its address is the first CREATE of the proxy.
 contract Factory is Ownable {
-    Game public game;
+    Lux public lux;
     ProxyAdmin public proxyAdmin;
     Statistics public implementation;
     ProxyStats public proxyStats;
 
-    constructor() {
-        // deploy the four core contracts
-        game = new Game();
-        proxyAdmin = new ProxyAdmin();
+    constructor() Ownable(msg.sender) {
+        lux = new Lux();
         implementation = new Statistics();
-        proxyStats = new ProxyStats(
-            address(implementation),
-            address(proxyAdmin),
-            address(game)
-        );
-        // initialise the game contract with the proxystats method
-        game.setStatistics(address(proxyStats));
-        // here is where statistics seats behind the proxy
+        proxyStats = new ProxyStats(address(implementation), address(this), address(lux));
+        // The proxy deploys its ProxyAdmin as its first (nonce 1) CREATE.
+        proxyAdmin = ProxyAdmin(_firstCreateOf(address(proxyStats)));
+        lux.setStatistics(address(proxyStats));
+        // Expose Statistics behind the proxy.
         implementation = Statistics(address(proxyStats));
     }
 
-    // use this function to register a level since this address is the owner of game
     function registerLevel(Level _level) public onlyOwner {
-        game.registerLevel(_level);
+        lux.registerLevel(_level);
     }
 
-    // use this function to transfer the ownership of the game contract to a new user(game?)
     function transferContractsOwnership(address _newOwner) public onlyOwner {
-        game.transferOwnership(_newOwner);
+        lux.transferOwnership(_newOwner);
         proxyAdmin.transferOwnership(_newOwner);
         transferOwnership(_newOwner);
+    }
+
+    /// @dev Address of the contract a deployer creates at nonce 1 (RLP [addr, 0x01]).
+    function _firstCreateOf(address deployer) private pure returns (address) {
+        return address(
+            uint160(
+                uint256(
+                    keccak256(
+                        abi.encodePacked(bytes1(0xd6), bytes1(0x94), deployer, bytes1(0x01))
+                    )
+                )
+            )
+        );
     }
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.37;
 
-import './base/Level-08.sol';
+import './base/Level.sol';
 import './GoodSamaritan.sol';
 
 contract GoodSamaritanFactory is Level {

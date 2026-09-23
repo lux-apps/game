@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.37;
 
-import "openzeppelin-contracts-08/access/Ownable.sol";
-import "openzeppelin-contracts-08/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 interface DelegateERC20 {
   function delegateTransfer(address to, uint256 value, address origSender) external returns (bool);
@@ -63,6 +63,8 @@ contract CryptoVault {
 }
 
 contract LegacyToken is ERC20("LegacyToken", "LGT"), Ownable {
+    constructor() Ownable(msg.sender) {}
+
     DelegateERC20 public delegate;
 
     function mint(address to, uint256 amount) public onlyOwner {
@@ -88,7 +90,9 @@ contract DoubleEntryPoint is ERC20("DoubleEntryPointToken", "DET"), DelegateERC2
     address public delegatedFrom;
     Forta public forta;
 
-    constructor(address legacyToken, address vaultAddress, address fortaAddress, address playerAddress) {
+    constructor(address legacyToken, address vaultAddress, address fortaAddress, address playerAddress)
+        Ownable(msg.sender)
+    {
         delegatedFrom = legacyToken;
         forta = Forta(fortaAddress);
         player = playerAddress;

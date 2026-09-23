@@ -1,15 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.12;
-
-import 'openzeppelin-contracts-06/math/SafeMath.sol';
+pragma solidity 0.8.37;
 
 contract Reentrance {
-  
-  using SafeMath for uint256;
+
   mapping(address => uint) public balances;
 
   function donate(address _to) public payable {
-    balances[_to] = balances[_to].add(msg.value);
+    balances[_to] = balances[_to] + msg.value;
   }
 
   function balanceOf(address _who) public view returns (uint balance) {
@@ -22,7 +19,12 @@ contract Reentrance {
       if(result) {
         _amount;
       }
-      balances[msg.sender] -= _amount;
+      // The bug: balance is debited after the external call, and the debit is
+      // unchecked so the reentrant drain does not revert on the wrap-around that
+      // the repeated withdrawals produce.
+      unchecked {
+        balances[msg.sender] -= _amount;
+      }
     }
   }
 

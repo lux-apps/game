@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.5.0;
+pragma solidity 0.8.37;
 
 import "../levels/AlienCodex.sol";
 
 contract AlienCodexAttack {
   AlienCodex public target;
 
-  constructor(address _target) public {
+  constructor(address _target) {
     target = AlienCodex(_target);
   }
 

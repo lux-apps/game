@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity 0.8.37;
 
 import "./levels/base/Level.sol";
-import "openzeppelin-contracts-08/access/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface IStatistics {
     function saveNewLevel(address level) external;
@@ -27,7 +27,9 @@ interface IStatistics {
     ) external;
 }
 
-contract Game is Ownable {
+contract Lux is Ownable {
+    constructor() Ownable(msg.sender) {}
+
     IStatistics public statistics;
 
     // ----------------------------------
