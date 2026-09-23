@@ -9,7 +9,6 @@ import "./styles/app.css";
 import * as actions from "../src/actions";
 import * as constants from "../src/constants";
 import "./utils/^^";
-import * as Sentry from "@sentry/react";
 import App from "./containers/App";
 import NotFound404 from "./components/not-found/NotFound404";
 import Header from "./containers/Header";
@@ -22,13 +21,17 @@ const Level = nonlazy(import("./containers/Level"));
 const Help = nonlazy(import("./containers/Help"));
 const Stats = nonlazy(import("./containers/Stats"));
 
-Sentry.init({
-  dsn: constants.SENTRY_DSN,
-  debug: false,
-  integrations: [Sentry.browserTracingIntegration()],
-  tracesSampleRate: 1.0,
-  release: constants.VERSION,
-});
+// Error reporting loads only when a DSN is configured.
+if (constants.SENTRY_DSN) {
+  import("@sentry/react").then((Sentry) =>
+    Sentry.init({
+      dsn: constants.SENTRY_DSN,
+      integrations: [Sentry.browserTracingIntegration()],
+      tracesSampleRate: 1.0,
+      release: constants.VERSION,
+    })
+  );
+}
 // Levels load once the wallet has told us its chain; without a wallet the
 // game is read only.
 let ready = Promise.resolve();
