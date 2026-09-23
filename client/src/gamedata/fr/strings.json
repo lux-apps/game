@@ -96,6 +96,8 @@
   "helperGetNetworkId": "obtenir l'identifiant du réseau ethereum",
   "helperToWei": "convertir les unités ether en wei",
   "helperFromWei": "convertir les unités wei en ether",
+  "helperGetStorageAt": "lit un emplacement de stockage d'un contrat",
+  "helperViem": "utilitaires viem : hachage, encodage ABI, unités (viem.sh)",
   "levelNotTranslated": "Ce niveau n'est pas traduit ou la traduction est incomplète. ",
   "contributeTranslation": "Cliquez ici pour améliorer la traduction.",
   "usingConsole": "La plupart des interactions de jeu se font via la console du navigateur: «Dev Tools -> Console».Ouvrez la console et entrez la commande:\n\n`help () `\n\n pour voir une liste d'objets et de fonctions injectés par le jeu à la console.Étant donné que la plupart des interactions sont asynchrones, nous vous recommandons d'utiliser Chrome V62 qui permet les mots clés `async / wait` dans la console, donc au lieu d'écrire:\n\n`getBalance (lecteur)> Promise`\n\n et ouvrir la promesse.Avec Await / Async, vous pouvez écrire:\n\n`wait getBalance (joueur)> '1.11002387' `\n\n",

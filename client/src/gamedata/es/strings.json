@@ -96,6 +96,8 @@
   "helperGetNetworkId": "obtén el identificador de la red",
   "helperToWei": "convierte ether en wei",
   "helperFromWei": "convierte wei en ether",
+  "helperGetStorageAt": "lee una posición de almacenamiento de un contrato",
+  "helperViem": "utilidades de viem: hashing, codificación ABI, unidades (viem.sh)",
   "levelNotTranslated": "Este nivel no está traducido o la traducción es incompleta. ",
   "contributeTranslation": "Haz clic aquí para contribuir en mejorar la traducción",
   "usingConsole": "Most game interaction is via the browser's console: `Dev Tools -> Console`. Open the console and enter the command: \n\n`help()`\n\n to see a list of objects and functions injected by the game to the console. Since most interactions are asynchronous, we recommend using Chrome v62 which enables the `async`/`await` keywords in the console, so instead of writting:\n\n`getBalance(player)> PROMISE`\n\nand opening the promise. With await/async, you can write:\n\n`await getBalance(player) > '1.11002387' `\n\n",

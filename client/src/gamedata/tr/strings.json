@@ -96,6 +96,8 @@
   "helperGetNetworkId": "ethereum ağ id sini getir",
   "helperToWei": "ether birimlerini wei ye çevir",
   "helperFromWei": "wei birimlerini ether e çevir",
+  "helperGetStorageAt": "bir sözleşmenin depolama yuvasını oku",
+  "helperViem": "viem araçları: hash, ABI kodlama, birimler (viem.sh)",
   "levelNotTranslated": "Bu seviye henüz çevirilmedi beya tercümesi eksik. ",
   "contributeTranslation": "Çeviriyi geliştirmek için buraya tıklayın.",
   "usingConsole": "Çoğu oyun etkileşimi tarayıcının konsolu üzerinden: `Dev Tools -> Console`. Konsolu açın ve komutu girin: \n\n`help()`\n\n Oyun tarafından enjekte edilen nesnelerin ve işlevlerin bir listesini konsola görmek.Çoğu etkileşim eşzamansız olduğundan, `async/await`Konsoldaki anahtar kelimeler, yazmak yerine:\n\n`getBalance(player)> PROMISE`\n\n ve sözün açılması. İle birlikte await/async, Yazabilirsin:\n\n`await getBalance(player) > '1.11002387' `\n\n",

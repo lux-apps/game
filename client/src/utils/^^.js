@@ -150,6 +150,7 @@ function setupConsoleUtils() {
   window.getBlockNumber = ethutil.getBlockNumber
   window.sendTransaction = ethutil.sendTransaction
   window.getNetworkId = ethutil.getNetworkId
+  window.getStorageAt = ethutil.getStorageAt
   window.toWei = ethutil.toWei
   window.fromWei = ethutil.fromWei
   window.version = constants.VERSION
@@ -166,13 +167,19 @@ function setupConsoleUtils() {
       'getBlockNumber()': strings.helperGetBlockNumber,
       'sendTransaction({options})': strings.helperSendTransaction,
       'getNetworkId()': strings.helperGetNetworkId,
+      'getStorageAt(address, slot)': strings.helperGetStorageAt,
       'toWei(ether)': strings.helperToWei,
       'fromWei(wei)': strings.helperFromWei,
+      'viem': strings.helperViem,
       'deployAllContracts()': strings.helperDeployAllContracts,
     })
   }
 }
 setupConsoleUtils()
+
+// viem for players, as its docs spell it: viem.keccak256, viem.parseEther.
+// It loads after the game rather than in the entry chunk.
+import('viem').then((viem) => { window.viem = viem })
 
 const ICONS_BAD = [
   '(╯°□°）╯',
