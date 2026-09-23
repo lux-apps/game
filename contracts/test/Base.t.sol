@@ -64,8 +64,19 @@ abstract contract LuxTest is Test {
     }
 
     /// @dev Assert that a freshly created, unexploited instance is not solvable.
+    /// A submission that reverts (some factories call into an unset solver) is
+    /// likewise proof the level is unsolved; only a completion log would fail it.
     function _assertUnsolved(address instance, address player) internal {
-        assertFalse(_submit(instance, player), "fresh instance already solved");
+        vm.recordLogs();
+        vm.prank(player, player);
+        try lux.submitLevelInstance(payable(instance)) {
+            Vm.Log[] memory logs = vm.getRecordedLogs();
+            for (uint256 i; i < logs.length; i++) {
+                if (logs[i].topics[0] == COMPLETED_SIG) {
+                    revert("fresh instance already solved");
+                }
+            }
+        } catch {}
     }
 
     /// @dev Assert that a submission solves the level and Lux records it.
