@@ -1,17 +1,18 @@
-import * as ethutil from '../utils/ethutil';
+import { parseEventLogs } from 'viem';
 import * as actions from '../actions';
 import { loadTranslations } from '../utils/translations';
-import { getGasFeeDetails } from '../utils/ethutil'
+import { loadContract, toWei } from '../utils/ethutil';
+import { loadArtifact } from '../utils/artifacts';
 import { verifyContract } from '../utils/contractutil';
 
 let language = localStorage.getItem('lang');
 let strings = loadTranslations(language);
 
-const loadLevelInstance = (store) => (next) => (action) => {
+const loadLevelInstance = (store) => (next) => async (action) => {
   if (action.type !== actions.LOAD_LEVEL_INSTANCE) return next(action);
 
   const state = store.getState();
-  if (!state.network.web3 || !state.contracts.lux) {
+  if (!state.network.connected || !state.contracts.lux) {
     console.error(`@bad ${strings.luxNotFoundMessage}`);
     return next(action);
   } else if (!state.player.address) {
@@ -39,61 +40,41 @@ const loadLevelInstance = (store) => (next) => (action) => {
       );
     };
 
-    const estimate = parseInt(action.level.instanceGas, 10) || 2000000;
-    const deployFunds = state.network.web3.utils.toWei(
-      parseFloat(action.level.deployFunds, 10).toString(),
-      'ether'
-    );
-    getGasFeeDetails(state.network, 2).then(gasFeeDetails => {
-      state.contracts.lux
-        .createLevelInstance(action.level.deployedAddress, {
-          // 2.5 * estimate is required for level creation to succeed in arbitrum goerli
-          gas: 2.5 * estimate.toString(),
-          ...gasFeeDetails,
-          from: state.player.address,
-          value: deployFunds,
-        })
-        .then((tx) => {
-          for (var i = 0; i < tx.logs.length; i++) {
-            if (tx.logs[i].event === "LevelInstanceCreatedLog") {
-              instanceAddress = tx.logs[i].args.instance;
-              action.instanceAddress = instanceAddress;
-              store.dispatch(action);
-            }
-          }
-          if (!instanceAddress) {
-            showErr(strings.transactionNoLogsMessage)
-          } else {
-            // Wait for the contract to index in the explorer
-            setTimeout(() => {
-              verifyContract(instanceAddress, action.level, state.network.networkId);
-            }, 30000);
-          }
-        }).catch((error) => {
-          showErr(error)
-        });
-    })
+    const lux = state.contracts.lux;
+    try {
+      const receipt = await lux.createLevelInstance(action.level.deployedAddress, {
+        value: toWei(action.level.deployFunds),
+      });
+      const [log] = parseEventLogs({
+        abi: lux.abi,
+        eventName: 'LevelInstanceCreatedLog',
+        logs: receipt.logs,
+      });
+      if (!log) return showErr(strings.transactionNoLogsMessage);
+      action.instanceAddress = log.args.instance;
+      store.dispatch(action);
+      // Wait for the contract to index in the explorer
+      setTimeout(() => {
+        verifyContract(log.args.instance, action.level, state.network.networkId);
+      }, 30000);
+    } catch (error) {
+      showErr(error);
+    }
+    return;
   }
 
   // Get instance from address
   if (!instanceAddress) return;
   console.info(`=> ${strings.instanceAddressMessage}\n${instanceAddress}`);
-  const Instance = ethutil.getTruffleContract(
-    require(`contracts/build/contracts/levels/${action.level.instanceContract
-      }/${withoutExtension(action.level.instanceContract)}.json`),
-    {
-      from: state.player.address,
-      gasPrice: 2 * state.network.gasPrice,
-    }
-  );
-  Instance.at(instanceAddress)
+  const { abi } = await loadArtifact(action.level.instanceContract);
+  loadContract(abi, instanceAddress)
     .then((instance) => {
       window.instance = instance.address;
       window.contract = instance;
       action.instance = instance;
       next(action);
     })
-    .catch((err) => {
+    .catch(() => {
       console.log(`waiting`);
       setTimeout(() => {
         store.dispatch(action);
@@ -102,11 +83,3 @@ const loadLevelInstance = (store) => (next) => (action) => {
 };
 
 export default loadLevelInstance;
-
-// ----------------------------------
-// Utils
-// ----------------------------------
-
-function withoutExtension(str) {
-  return str.split('.')[0];
-}

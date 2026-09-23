@@ -1,5 +1,5 @@
-import * as ethutil from '../utils/ethutil'
-import LuxABI from 'contracts/build/contracts/Lux.sol/Lux.json'
+import { loadContract } from '../utils/ethutil'
+import { abi as luxAbi } from 'contracts/out/Lux.sol/Lux.json'
 import * as actions from '../actions';
 import { loadTranslations } from '../utils/translations'
 
@@ -12,26 +12,14 @@ const loadLuxContract = store => next => action => {
 
   const state = store.getState()
   if (
-    !state.network.web3 ||
+    !state.network.connected ||
     !state.player.address ||
     !state.gamedata.luxAddress
   ) {
-    // console.log(`UNABLE TO LOAD LUX`)
     return next(action)
   }
-  // console.log(`GETTING LUX...`, state.gamedata.luxAddress)
 
-  // Get contract template
-  const Lux = ethutil.getTruffleContract(
-    LuxABI,
-    {
-      from: state.player.address,
-      gasPrice: state.network.gasPrice
-    }
-  )
-
-  // Get deployed instance
-  Lux.at(state.gamedata.luxAddress)
+  loadContract(luxAbi, state.gamedata.luxAddress)
     .then(instance => {
 
       console.info(`=> ${strings.luxAddressMessage}\n${instance.address}`)
@@ -40,7 +28,7 @@ const loadLuxContract = store => next => action => {
       window.lux = instance
 
       action.contract = instance
-      
+
       next(action)
 
       // Get game data

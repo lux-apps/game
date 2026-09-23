@@ -1,256 +1,172 @@
-import * as ethjs from 'ethereumjs-util';
-import TruffleContract from '@truffle/contract';
-import * as constants from "../constants.js";
-import { NETWORKS_INGAME } from '../constants.js'
+import {
+  createPublicClient,
+  createWalletClient,
+  custom,
+  formatEther,
+  getAbiItem,
+  isAddress,
+  parseEther,
+  toFunctionSignature,
+  toHex,
+  zeroAddress,
+} from "viem";
+import { NETWORKS } from "../constants";
 
-let web3;
-let duplicateTransactions = new Map();
+let publicClient;
+let walletClient;
+let player;
 
-export const setWeb3 = (_web3) => {
-  web3 = _web3;
-}
+// Binds the game to the browser wallet (EIP-1193): reads go through the
+// public client, transactions are signed by the wallet.
+export const connect = (provider) => {
+  const transport = custom(provider);
+  publicClient = createPublicClient({ transport });
+  walletClient = createWalletClient({ transport });
+};
 
-export const getWeb3 = () => web3;
+// Default sender for transactions: the console's `player`.
+export const setPlayer = (address) => {
+  player = address;
+};
 
-export const getTruffleContract = (jsonABI, defaults = {}) => {
-  // // HACK: Doing this here instead of `import` so that the project uses the web3.js version
-  // // defined in `package.json` instead of relying on Truffle dependencies (that use an old version).
-  // // With this, MetaMask v9 deprecation warnings are removed. 
-  // const TruffleContract = require('@truffle/contract');
+export const getPlayer = () => player;
 
-  const truffleContract = TruffleContract(jsonABI);
-  if (!defaults.gasPrice) defaults.gasPrice = 2000000000;
-  if (!defaults.gas) defaults.gas = 2000000;
-  truffleContract.defaults(defaults);
-  truffleContract.setProvider(web3.currentProvider);
-  return truffleContract;
-}
+export const requestAccount = async () => {
+  const [account] = await walletClient.requestAddresses();
+  return account;
+};
 
-export const getBalance = (address) => {
-  return new Promise(function (resolve, reject) {
-    web3.eth.getBalance(address, function (error, result) {
-      if (error) reject(error)
-      else resolve(web3.utils.fromWei(result, 'ether'))
-    })
-  })
-}
+// Transaction fields a trailing options object may carry, as the console
+// has always taken them: contract.fn(arg, { value: toWei("1") }).
+const OPTIONS = ["from", "value", "gas", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "nonce"];
 
-export const getBlockNumber = () => {
-  return new Promise((resolve, reject) => {
-    web3.eth.getBlockNumber((err, blockNumber) => {
-      if (err) reject(err)
-      resolve(blockNumber);
-    });
+const isOptions = (arg) =>
+  arg !== null &&
+  typeof arg === "object" &&
+  !Array.isArray(arg) &&
+  Object.keys(arg).every((key) => OPTIONS.includes(key));
+
+// Converts decimal or hex strings and numbers to what viem expects.
+const txFields = ({ from, value, gas, gasPrice, maxFeePerGas, maxPriorityFeePerGas, nonce }) => {
+  const fields = { account: from ?? player };
+  if (value !== undefined) fields.value = BigInt(value);
+  if (gas !== undefined) fields.gas = BigInt(gas);
+  if (gasPrice !== undefined) fields.gasPrice = BigInt(gasPrice);
+  if (maxFeePerGas !== undefined) fields.maxFeePerGas = BigInt(maxFeePerGas);
+  if (maxPriorityFeePerGas !== undefined) fields.maxPriorityFeePerGas = BigInt(maxPriorityFeePerGas);
+  if (nonce !== undefined) fields.nonce = Number(nonce);
+  return fields;
+};
+
+const confirm = async (hash) => {
+  const receipt = await publicClient.waitForTransactionReceipt({ hash });
+  if (receipt.status === "reverted") throw new Error(`Transaction ${hash} reverted`);
+  return receipt;
+};
+
+const invoke = async (address, fn, args, options) => {
+  const { account, ...tx } = txFields(options);
+  const request = { address, abi: [fn], functionName: fn.name, args, account };
+  if (fn.stateMutability === "view" || fn.stateMutability === "pure") {
+    return publicClient.readContract(request);
+  }
+  return confirm(await walletClient.writeContract({ ...request, ...tx, chain: null }));
+};
+
+// Picks the overload whose arity matches the arguments, then by argument
+// types; a trailing options object is taken off when no overload takes it.
+const resolve = (overloads, args) => {
+  for (const withOptions of [false, true]) {
+    if (withOptions && !isOptions(args[args.length - 1])) break;
+    const params = withOptions ? args.slice(0, -1) : args;
+    const candidates = overloads.filter((fn) => fn.inputs.length === params.length);
+    if (candidates.length === 0) continue;
+    const fn =
+      candidates.length === 1
+        ? candidates[0]
+        : getAbiItem({ abi: candidates, name: candidates[0].name, args: params });
+    return [fn, params, withOptions ? args[args.length - 1] : {}];
+  }
+  throw new Error(`${overloads[0].name}: no overload takes ${args.length} arguments`);
+};
+
+// The object the console exposes as `contract` and `lux`: contract.fn(...args)
+// reads view and pure functions and sends a transaction from `player` for the
+// rest, resolving to its receipt. contract.methods["fn(uint256)"] names one
+// overload exactly.
+export const contractAt = (abi, address) => {
+  const functions = abi.filter((item) => item.type === "function");
+  const contract = {
+    abi,
+    address,
+    methods: {},
+    sendTransaction: (options = {}) => sendTransaction({ to: address, ...options }),
+    send: (value, options = {}) => sendTransaction({ to: address, value, ...options }),
+  };
+  for (const fn of functions) {
+    contract.methods[toFunctionSignature(fn)] = (...args) => {
+      const options = args.length > fn.inputs.length ? args.pop() : {};
+      return invoke(address, fn, args, options);
+    };
+  }
+  for (const name of new Set(functions.map((fn) => fn.name))) {
+    if (name in contract) continue;
+    const overloads = functions.filter((fn) => fn.name === name);
+    contract[name] = (...args) => invoke(address, ...resolve(overloads, args));
+  }
+  return contract;
+};
+
+// Resolves to the contract at `address`, or rejects when no code is there.
+export const loadContract = async (abi, address) => {
+  const code = await publicClient.getCode({ address });
+  if (!code) throw new Error(`No contract code at ${address}`);
+  return contractAt(abi, address);
+};
+
+export const deployContract = async ({ abi, bytecode }, args = []) => {
+  const hash = await walletClient.deployContract({
+    abi,
+    bytecode: bytecode.object,
+    args,
+    account: player,
+    chain: null,
   });
-}
+  return (await confirm(hash)).contractAddress;
+};
 
-export const sendTransaction = (options) => {
-  return new Promise((resolve, reject) => {
-    web3.eth.sendTransaction(options, (err, res) => {
-      if (err) reject(err)
-      else resolve(res)
-    })
-  })
-}
+export const getBalance = async (address) =>
+  formatEther(await publicClient.getBalance({ address }));
 
-export const getNetworkId = () => {
-  return new Promise((resolve, reject) => {
-    web3.eth.net.getId((err, netId) => {
-      if (err) reject();
-      else resolve(netId);
-    });
-  });
-}
+export const getBlockNumber = async () => Number(await publicClient.getBlockNumber());
 
-export const toWei = (ether) => {
-  return web3.utils.toWei(ether, 'ether')
-}
+export const getNetworkId = () => publicClient.getChainId();
 
-export const fromWei = (wei) => {
-  return web3.utils.fromWei(wei, 'ether')
-}
+export const getStorageAt = (address, slot) =>
+  publicClient.getStorageAt({ address, slot: toHex(BigInt(slot)) });
 
-export const watchAccountChanges = (callback, lastKnownAccount) => {
-  let interval = setInterval(function () {
-    web3.eth.getAccounts(function (error, accounts) {
-      if (error) return console.log(error)
-      const newAccount = accounts[0]
-      if (newAccount !== lastKnownAccount) {
-        callback(newAccount)
-        clearInterval(interval)
-        this.watchAccountChanges(callback, newAccount);
-      }
-    })
-  }, 1000)
-}
+export const sendTransaction = async ({ to, data, ...options } = {}) =>
+  confirm(await walletClient.sendTransaction({ to, data, ...txFields(options), chain: null }));
 
-export const watchNetwork = (callbacks) => {
+export const toWei = (ether) => parseEther(String(ether)).toString();
 
-  // Gas price
-  if (callbacks.gasPrice) {
-    const gasPrice = function () {
-      web3.eth.getGasPrice(function (error, result) {
-        if (error) return console.log(error)
-        callbacks.gasPrice(result)
-      })
-    }
-    gasPrice()
-    setInterval(gasPrice, 30 * 60000)
-  }
+export const fromWei = (wei) => formatEther(BigInt(wei));
 
-  // Network id
-  if (callbacks.networkId) {
-    const netId = function () {
-      web3.eth.net.getId(function (error, result) {
-        if (error) return console.log(error)
-        callbacks.networkId(result)
-      })
-    }
-    netId()
-    setInterval(netId, 5 * 1000)
-  }
+export const validateAddress = (address) =>
+  Boolean(address) && address !== zeroAddress && isAddress(address);
 
-  // Block num
-  if (callbacks.blockNum) {
-    const blockNum = function () {
-      web3.eth.getBlockNumber((err, blockNumber) => {
-        if (err) console.log(err)
-        callbacks.blockNum(blockNumber);
-      });
-    }
-    blockNum()
-    setInterval(blockNum, 10 * 1000)
-  }
-
-}
-
-export const validateAddress = (address) => {
-  if (!address) return false;
-  if (address === '0x0000000000000000000000000000000000000000') return false;
-  if (address.substring(0, 2) !== "0x") return false;
-
-  // Basic validation: length, valid characters, etc
-  if (!/^(0x)?[0-9a-f]{40}$/i.test(address)) return false;
-
-  // Checksum validation.
-  const raw = address.replace('0x', '');
-  const allLowerCase = raw.toLowerCase() === raw;
-  const allUppercase = raw.toUpperCase() === raw;
-  if (allLowerCase || allUppercase) {
-    return true; // accepts addreses with no checksum data
-  }
-  else {
-    const checksum = ethjs.toChecksumAddress(address);
-    if (address !== checksum) return false;
-  }
-
-  return true;
-}
-
-export const addressHasChecksum = (address) => {
-  if (!module.exports.isValidAddress(address)) return false;
-  const raw = address.replace('0x', '');
-  const allLowerCase = raw.toLowerCase() === raw;
-  const allUppercase = raw.toUpperCase() === raw;
-  return !(allLowerCase || allUppercase);
-}
-
-export const verifySignature = (json) => {
+// Asks the wallet to switch to `network`, adding the chain when the wallet
+// does not know it yet (EIP-3326 error 4902).
+export const switchNetwork = async ({ chain }) => {
   try {
-    const messageHash = ethjs.hashPersonalMessage(ethjs.toBuffer(json.msg));
-    const signedMessageDecoded = ethjs.fromRpcSig(json.sig);
-    const recoveredPublicKey = ethjs.ecrecover(messageHash, signedMessageDecoded.v, signedMessageDecoded.r, signedMessageDecoded.s);
-    const recoveredAddressBuffer = ethjs.pubToAddress(recoveredPublicKey);
-    const recoveredAddress = ethjs.bufferToHex(recoveredAddressBuffer);
-    return json.address === recoveredAddress;
+    await walletClient.switchChain({ id: chain.id });
+  } catch (error) {
+    if (error.code !== 4902) throw error;
+    await walletClient.addChain({ chain });
   }
-  catch (err) {
-    return false;
-  }
-}
+};
 
-export const signMessageWithMetamask = (addr, message, callback) => {
-  const msg = ethjs.bufferToHex(new Buffer(message, 'utf8'));
-  web3.currentProvider.sendAsync({
-    method: 'personal_sign',
-    params: [msg, addr],
-    addr
-  }, function (err, res) {
-    callback({
-      address: addr,
-      msg: message,
-      sig: res.result,
-      version: '2'
-    });
-  });
-}
+export const getNetworkFromId = (networkId) =>
+  Object.values(NETWORKS).find((network) => network && network.id === networkId.toString());
 
-export const logger = (req, res, next, end) => {
-  next((cb) => {
-    // HACK: do not log known error when setting event log filters
-    if (res.error && !res.error.message.includes("TypeError: Cannot read property 'filter' of undefined")) {
-      console.error('Error in RPC response:\n', res.error.message);
-    } else if (req.method === 'eth_sendTransaction') {
-      console.mineInfo('Sent transaction', res.result);
-    } else if (req.method === 'eth_getTransactionReceipt' && res.result) {
-      if (duplicateTransactions.size > 1000) duplicateTransactions.clear()
-      if (!duplicateTransactions.get(res.result.transactionHash)) {
-        duplicateTransactions.set(res.result.transactionHash, true);
-        console.mineInfo('Mined transaction', res.result.transactionHash);
-      }
-    }
-    cb();
-  })
-}
-
-export const attachLogger = () => {
-  if (web3.currentProvider._rpcEngine) {
-    web3.currentProvider._rpcEngine._middleware.unshift(logger);
-    return;
-  }  //If the current provider hasn't an RPC Engine look for other providers
-  else if (web3.currentProvider.providers) {
-    var providers = web3.currentProvider.providers;
-    for (var i = 0; i < providers.length; i++) {
-      if (providers[i]._rpcEngine) {
-        providers[i]._rpcEngine._middleware.unshift(logger);
-
-        // Set this provider as current provider
-        web3.currentProvider = providers[i];
-        return;
-      }
-    }
-  }
-
-  //If still there's no RPC Engine throw error
-  console.error("Can't find a valid provider, make sure you have Metamask installed and that any other wallet plugin is disabled");
-  return;
-}
-
-export const getGasFeeDetails = async (network, multiplier) => {
-  if (constants.SUPPORTS_EIP_1559.includes(network.networkId.toString())) {
-    const maxPriorityFeePerGas = network.web3.utils.toWei('2.5', 'gwei');
-    const block = await network.web3.eth.getBlock('latest')
-    const blockBaseFee = block.baseFeePerGas ? block.baseFeePerGas : 1;
-    return {
-      maxPriorityFeePerGas,
-      maxFeePerGas: multiplier * Number(blockBaseFee) + Number(maxPriorityFeePerGas)
-    }
-  } else {
-    const gasPrice = await network.web3.eth.getGasPrice()
-    return {
-      gasPrice: multiplier * gasPrice
-    }
-  }
-}
-
-export const getNetworkFromId = (networkId) => {
-  const networkObjectsList = Object.values(NETWORKS_INGAME);
-  for (let network of networkObjectsList)
-    if (network && network.id === networkId.toString())
-      return network;
-}
-
-export const getNetworkNamefromId = (networkId) => {
-  const network = getNetworkFromId(networkId);
-  return network.name
-}
+export const getNetworkNamefromId = (networkId) => getNetworkFromId(networkId).name;

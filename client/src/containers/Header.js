@@ -10,6 +10,7 @@ import { loadTranslations } from "../utils/translations";
 import PropTypes from "prop-types";
 import { ProgressBar } from "react-loader-spinner";
 import { svgFilter } from "../utils/svg";
+import { switchNetwork } from "../utils/ethutil";
 import LeaderIcon from "../components/leaderboard/LeaderIcon";
 
 class Header extends React.Component {
@@ -23,7 +24,7 @@ class Header extends React.Component {
       multiDDOpen: false,
     };
 
-    if (this.props.web3) {
+    if (this.props.connected) {
       window.ethereum.request({ method: "eth_chainId" }).then((id) => {
         this.setState({ chainId: Number(id) });
       });
@@ -113,49 +114,10 @@ class Header extends React.Component {
     const elements = document.querySelectorAll(".progress-bar-wrapper");
     elements[0].style.display = "flex";
     try {
-      const chainId = await window.ethereum.request({ method: "eth_chainId" });
-      if (Number(chainId) === Number(network.id)) {
-        return;
-      }
-      await window.ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [
-          {
-            chainId: `0x${Number(network.id).toString(16)}`,
-          },
-        ],
-      });
-    } catch (switchError) {
-      // This error code indicates that the chain has not been added to MetaMask.
-      if (switchError.code === 4902) {
-        try {
-          await window.ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: `0x${Number(network.id).toString(16)}`,
-                chainName: network.name,
-                rpcUrls: [network.rpcUrl],
-                nativeCurrency: {
-                  name: network.currencyName,
-                  symbol: network.currencySymbol,
-                  decimals: 18,
-                },
-                blockExplorerUrls: [network.blockExplorer],
-              },
-            ],
-          });
-        } catch (addError) {
-          if (addError.code === 4001) {
-            //User has rejected changing the request
-            elements[0].style.display = "none";
-          }
-          console.error("Can't add nor switch to the selected network");
-        }
-      } else if (switchError.code === 4001) {
-        //User has rejected changing the request
-        elements[0].style.display = "none";
-      }
+      await switchNetwork(network);
+    } catch (error) {
+      elements[0].style.display = "none";
+      if (error.code !== 4001) console.error("Can't add nor switch to the selected network");
     }
   }
 
@@ -315,7 +277,7 @@ class Header extends React.Component {
                       </Link>
                     </div>
                     {window.location.pathname === constants.PATH_ROOT &&
-                      !!this.props.web3 && (
+                      !!this.props.connected && (
                         <Link   onClick={() => this.toggleDropdownState()}
                         to={constants.PATH_LEADERBOARD}>
                           <div
@@ -337,7 +299,7 @@ class Header extends React.Component {
 
                 <div
                   className={`single-dropdown --${
-                    this.props.web3 && "--hidden"
+                    this.props.connected && "--hidden"
                   }`}
                 >
                   <p onClick={() => this.setActiveTab(2)}>
@@ -345,7 +307,7 @@ class Header extends React.Component {
                     <span>{strings.Networks}</span>
                   </p>
                   <div className={this.getDDClassName(2)}>
-                    {Object.values(constants.NETWORKS_INGAME).map((network, index) => {
+                    {Object.values(constants.NETWORKS).map((network, index) => {
                       if (network && network.name !== "local") {
                         if (Number(network.id) === this.state.chainId)
                           return false; // filter out current network
@@ -424,7 +386,7 @@ class Header extends React.Component {
             wrapperClass="progress-bar-wrapper"
             visible={true}
           />
-          {!this.props.web3 && (
+          {!this.props.connected && (
             <div
               style={{ backgroundColor: "#eddfd6", border: "none" }}
               className="alert alert-warning"
@@ -441,7 +403,7 @@ class Header extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    web3: state.network.web3,
+    connected: state.network.connected,
     allLevelsCompleted: state.player.allLevelsCompleted,
   };
 }

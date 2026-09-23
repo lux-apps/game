@@ -25,7 +25,7 @@ class Stats extends React.Component {
       lang: localStorage.getItem("lang"),
     }
 
-    if (this.props.web3) {
+    if (this.props.connected) {
       window.ethereum.request({ method: 'eth_chainId' }).then((id) => {
         this.setState({ chainId: Number(id) });
       });
@@ -33,7 +33,7 @@ class Stats extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState ) {
-    if (this.props.web3 && prevProps.web3 !== this.props.web3) {
+    if (this.props.connected && prevProps.connected !== this.props.connected) {
       this.collectsGlobalStats();
     }
   }
@@ -46,10 +46,10 @@ class Stats extends React.Component {
       getTotalPlayers(this.state.chainId)
     ])
     this.setState({
-      totalCompleted: completed ? completed.toNumber() : 0,
-      totalCreated: created ? created.toNumber() : 0,
-      totalFailures: failures ? failures.toNumber() : 0,
-      totalPlayers: totalPlayers ? totalPlayers.toNumber() : 0,
+      totalCompleted: Number(completed ?? 0),
+      totalCreated: Number(created ?? 0),
+      totalFailures: Number(failures ?? 0),
+      totalPlayers: Number(totalPlayers ?? 0),
     })
   }
 
@@ -152,7 +152,7 @@ class Stats extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    web3: state.network.web3,
+    connected: state.network.connected,
   }
 }
 

@@ -15,7 +15,6 @@ import activateLevel from './middlewares/activateLevel'
 import setPlayerAddress from './middlewares/setPlayerAddress'
 import setNetwork from './middlewares/setNetwork'
 import syncPlayerProgress from './middlewares/syncPlayerProgress'
-import collectStats from './middlewares/collectStats'
 import setLanguage from './middlewares/setLanguage';
 import { createBrowserHistory } from 'history';
 import * as constants from '../src/constants';
@@ -31,7 +30,6 @@ const middlewares = [
   setPlayerAddress,
   setNetwork,
   syncPlayerProgress,
-  collectStats,
   setLanguage,
   thunkMiddleware,
   routerMiddleware(history)

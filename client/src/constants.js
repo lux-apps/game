@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import pkgWeb3 from "web3";
+import { localhost, sepolia } from "viem/chains";
 
 dotenv.config();
 
@@ -7,39 +7,19 @@ export const DEBUG = process.env.NODE_ENV !== "production";
 export const DEBUG_REDUX = DEBUG;
 export const SENTRY_DSN = process.env.REACT_APP_SENTRY_DSN;
 
-// Networks for operations
+// Networks the game runs on. `chain` is what the wallet is asked to switch
+// to; `explorer` verifies level instances.
 export const NETWORKS = {
   UNDEFINED: undefined,
   LOCAL: {
     name: "local",
     id: "1337",
-    url: "http://localhost",
-    port: 8545,
+    chain: localhost,
   },
   SEPOLIA: {
     name: "sepolia",
     id: "11155111",
-    url: `${process.env.SEPOLIA_HOST}`,
-    privKey: `${process.env.PRIV_KEY}`,
-  },
-};
-
-// Networks for operations
-export const NETWORKS_INGAME = {
-  UNDEFINED: undefined,
-  LOCAL: {
-    name: "local",
-    id: "1337",
-    url: "http://localhost",
-    port: 8545,
-  },
-  SEPOLIA: {
-    name: "sepolia",
-    id: "11155111",
-    currencyName: "Sepolia-ETH",
-    currencySymbol: "SEP",
-    rpcUrl: `https://rpc.sepolia.org`,
-    blockExplorer: "https://sepolia.etherscan.io",
+    chain: sepolia,
     explorer: {
       apiKey: `${process.env.REACT_APP_SEPOLIA_EXPLORER_API_KEY}`,
       apiHost: `https://api-sepolia.etherscan.io`,
@@ -51,9 +31,6 @@ export const NETWORKS_INGAME = {
 // status: {deprecated | deprecation-planned}
 export const NETWORKS_DEPRECATION = {};
 
-// Web3
-export const Web3 = pkgWeb3;
-
 // Misc
 export const CLEAR_CONSOLE = !DEBUG;
 export const GOOGLE_ANALYTICS_ID = "UA-85043059-4";
@@ -63,11 +40,6 @@ export const ADDRESSES = {
   [NETWORKS.LOCAL.name]: undefined,
   [NETWORKS.SEPOLIA.name]: "0x09902A56d04a9446601a0d451E07459dC5aF0820",
 };
-
-// Support EIP-1559
-export const SUPPORTS_EIP_1559 = [
-  '11155111', // NETWORKS.SEPOLIA.id
-]
 
 // Core contract keys
 export const CORE_CONTRACT_NAMES = [

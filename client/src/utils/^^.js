@@ -124,29 +124,6 @@ function interceptConsole() {
     )
   }
 
-  // MINE
-  logger.mineInfo = function (text, txId) {
-    const color = stringToColor(txId)
-    const negColor = invertColor(color)
-
-    window.web3.eth.net.getId().then((res) => {
-      var network_name = constants.ID_TO_NETWORK[res];
-      var networks = Object.values(constants.NETWORKS_INGAME);
-      var networkObject;
-      for (var i = 1; i < networks.length; i++) {
-        if (networks[i].name === network_name) networkObject = networks[i]
-      }
-      defaultConsole.info(
-        `%c⛏️ ${text} ⛏%c`,
-        `color: ${negColor}; font-weight: bold; font-size: 12px; background-color: ${color};`,
-        "",
-        networkObject ? `${networkObject.blockExplorer}/tx/${txId}` : ''
-      )
-    }
-    )
-
-  }
-
   // FILTER LOGGING
   function processArgs(args) {
     for (let i = 0; i < args.length; i++) {
@@ -167,53 +144,6 @@ function interceptConsole() {
       }
     }
     return args
-  }
-
-  // ----------------------------------
-  // Utils
-  // ----------------------------------
-
-  function hashString(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return hash;
-  }
-
-  function stringToColor(str) {
-    let hash = hashString(str);
-    let color = "#";
-    for (let i = 0; i < 3; i++) {
-      const value = (hash >> (i * 8)) & 0xff;
-      color += ("00" + value.toString(16)).substr(-2);
-    }
-    return color;
-  }
-
-  function invertColor(hex) {
-    if (hex.indexOf('#') === 0) {
-      hex = hex.slice(1);
-    }
-    // convert 3-digit hex to 6-digits.
-    if (hex.length === 3) {
-      hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-    }
-    if (hex.length !== 6) {
-      throw new Error('Invalid HEX color.');
-    }
-    // invert color components
-    let r = (255 - parseInt(hex.slice(0, 2), 16)).toString(16),
-      g = (255 - parseInt(hex.slice(2, 4), 16)).toString(16),
-      b = (255 - parseInt(hex.slice(4, 6), 16)).toString(16);
-    // pad each with zeros and return
-    return '#' + padZero(r) + padZero(g) + padZero(b);
-  }
-
-  function padZero(str, len) {
-    len = len || 2;
-    let zeros = new Array(len).join('0');
-    return (zeros + str).slice(-len);
   }
 }
 if (constants.CUSTOM_LOGGING) interceptConsole()

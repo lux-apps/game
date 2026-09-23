@@ -1,11 +1,7 @@
-import colors from "colors";
-import * as ethutil from "../utils/ethutil.js";
-import * as LocalFactoryABI from "contracts/build/contracts/factory/LocalFactory.sol/Factory.json";
-import { getGasFeeDetails } from "../utils/ethutil.js";
+import * as ethutil from "./ethutil";
+import { loadArtifact } from "./artifacts";
 import {
   cacheContract,
-  fetchLevelABI,
-  getInjectedProvider,
   restoreContract,
   updateCachedContract,
 } from "./contractutil";
@@ -13,21 +9,13 @@ import { CORE_CONTRACT_NAMES, ID_TO_NETWORK } from "../constants.js";
 import { loadTranslations } from "../utils/translations";
 
 const logger = (text) => {
-  console.dir(colors.cyan(`<<  ${text.toUpperCase()}  >>`));
+  console.dir(`<<  ${text.toUpperCase()}  >>`);
 };
 
-async function deploySingleContract(
-  contractABI,
-  gasDetails,
-  from,
-  { deployParams = [] } = {}
-) {
-  logger(`Deploying ${contractABI.contractName} contract`);
-  const Contract = await ethutil.getTruffleContract(contractABI, {
-    from,
-  });
-  const contract = await Contract.new(...deployParams, gasDetails);
-  return contract;
+async function deploySingleContract(file, name) {
+  const artifact = await loadArtifact(file, name);
+  logger(`Deploying ${name ?? file.split(".")[0]} contract`);
+  return ethutil.contractAt(artifact.abi, await ethutil.deployContract(artifact));
 }
 
 const confirmMainnetDeployment = (chainId) => {
@@ -49,72 +37,47 @@ const confirmMainnetDeployment = (chainId) => {
 
 export async function deployAndRegisterLevel(level) {
   try {
-    const levelABI = fetchLevelABI(level);
-    const web3 = ethutil.getWeb3();
-    const chainId = await web3.eth.getChainId();
+    const chainId = await ethutil.getNetworkId();
     if (!confirmMainnetDeployment(chainId)) {
       return false;
     }
-    const gasDetails = await getGasFeeDetails({ networkId: chainId, web3: web3 }, 10);
-    const from = (await web3.eth.getAccounts())[0];
-    const levelContractAddress = await deploySingleContract(
-      levelABI,
-      { gas: 10000000, ...gasDetails },
-      from
-    );
+    const levelContract = await deploySingleContract(level.levelContract);
 
     logger(`Registering ${level.name} level on the lux contract `);
     // -- use the factory to register a new level since it owns the lux contract
     const factoryAddress = restoreContract(chainId)["factory"];
-    const LocalFactory = await ethutil.getTruffleContract(LocalFactoryABI.default, {
-      from,
-    });
-    const localFactory = await LocalFactory.at(factoryAddress);
-    await localFactory.registerLevel(levelContractAddress.address, gasDetails);
+    const { abi } = await loadArtifact("LocalFactory.sol", "Factory");
+    await ethutil.contractAt(abi, factoryAddress).registerLevel(levelContract.address);
     // -- add this level factory instance to state
-    updateCachedContract(level.deployId, levelContractAddress.address, chainId);
-    return levelContractAddress;
+    updateCachedContract(level.deployId, levelContract.address, chainId);
+    return levelContract;
   } catch (err) {
     console.log(err);
     return false;
-    // alert(err.message);
   }
-  // return contractAddress;
 }
 
 export async function deployAdminContracts() {
   try {
-    // -- get instance of metamask injected into the environment
-    const web3 = getInjectedProvider();
-    const chainId = await web3.eth.getChainId();
+    const chainId = await ethutil.getNetworkId();
     if (!confirmMainnetDeployment(chainId)) {
       return false;
     }
     const gameData = restoreContract(chainId);
 
-    const gasDetails = await getGasFeeDetails({ networkId: chainId, web3: web3 }, 10);
-    const from = (await web3.eth.getAccounts())[0];
-
     // -- deploy factory contracts
-    const factoryContracts = await deploySingleContract(
-      LocalFactoryABI.default,
-      { gas: 10000000, ...gasDetails },
-      from
-    );
+    const factory = await deploySingleContract("LocalFactory.sol", "Factory");
     // -- query factory address for lux, proxy, proxyadmin and implementation
-    const deployedCoreContracts =
-      await Promise.all(
-        CORE_CONTRACT_NAMES.map((coreContractName) =>
-          factoryContracts[coreContractName]()
-        )
-      );
+    const deployedCoreContracts = await Promise.all(
+      CORE_CONTRACT_NAMES.map((coreContractName) => factory[coreContractName]())
+    );
 
     // -- update the game data array with contract values
     CORE_CONTRACT_NAMES.forEach(
       (key, index) => (gameData[key] = deployedCoreContracts[index])
     );
-    gameData.factory = factoryContracts.address;
-    gameData.owner = from;
+    gameData.factory = factory.address;
+    gameData.owner = ethutil.getPlayer();
     cacheContract(gameData, chainId);
 
     // -- stop loader (unnecessary since refresh?)
@@ -125,9 +88,7 @@ export async function deployAdminContracts() {
     document.location.replace(document.location.origin);
     return true;
   } catch (err) {
-    // TODO maybe refresh the page if they fail to deploy the contracts
     console.log(err);
-    // alert(err.message); //todo show a notification prompting the user to click something to restart the process
     return false;
   } finally {
     // -- stop the loader

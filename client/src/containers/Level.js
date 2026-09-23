@@ -295,7 +295,7 @@ class Level extends React.Component {
                 )}
 
                 {/* DEPLOY OR CREATE */}
-                {this.props.web3 && <button
+                {this.props.connected && <button
                   type="button"
                   className="button-actions"
                   onClick={
@@ -347,7 +347,7 @@ function mapStateToProps(state) {
   const level = state.gamedata.activeLevel;
 
   return {
-    web3: state.network.web3,
+    connected: state.network.connected,
     networkId: state.network.networkId,
     level: level,
     activeLevel: level,

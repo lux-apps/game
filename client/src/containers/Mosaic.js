@@ -27,7 +27,7 @@ class Mosaic extends React.Component {
             <Link
               key={level.name}
               to={
-                this.props.web3 && level.deployedAddress //on read only mode in custom network this field 'deployedAddress' isnt present
+                this.props.connected && level.deployedAddress //on read only mode in custom network this field 'deployedAddress' isnt present
                   ? `${constants.PATH_LEVEL_ROOT}${level.deployedAddress}`
                   : `${constants.PATH_LEVEL_ROOT}${level.id}`
               }
@@ -50,7 +50,7 @@ class Mosaic extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    web3: state.network.web3,
+    connected: state.network.connected,
     levels: state.gamedata.levels,
     player: state.player,
     activeLevel: state.gamedata.activeLevel

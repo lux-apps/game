@@ -4,7 +4,6 @@ import networkReducer from './networkReducer'
 import gamedataReducer from './gamedataReducer'
 import playerReducer from './playerReducer'
 import contractsReducer from './contractsReducer'
-import statsReducer from './statsReducer'
 import languageReducer from './languageReducer'
 
 const reducer = combineReducers({
@@ -13,7 +12,6 @@ const reducer = combineReducers({
   gamedata: gamedataReducer,
   player: playerReducer,
   contracts: contractsReducer,
-  stats: statsReducer,
   lang: languageReducer,
 });
 

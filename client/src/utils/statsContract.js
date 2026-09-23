@@ -1,7 +1,8 @@
-import { getTruffleContract } from './ethutil';
+import { formatEther } from 'viem';
+import { contractAt } from './ethutil';
 import { getDeployData } from './deploycontract';
-import Web3 from 'web3';
 import { getLevelDetailsByAddress } from './getlevelsdata';
+import { abi as statisticsAbi } from 'contracts/out/Statistics.sol/Statistics.json';
 
 export const getLevelsSolvedByPlayer = async (playerAddress, networkId) => {
     if (!(playerAddress || networkId)) {
@@ -9,8 +10,7 @@ export const getLevelsSolvedByPlayer = async (playerAddress, networkId) => {
     }
 
     const levelAddresses = getLevelAddressesInNetwork(networkId)
-    const proxyStatsAddress = getProxyStatsContractAddressInNetwork(networkId)
-    const statsContract = await getStatsContract(proxyStatsAddress, playerAddress)
+    const statsContract = getStatsContract(networkId)
     const listOfLevelsSolved = await getListOfLevelsSolvedByPlayer(statsContract, levelAddresses, playerAddress, 5)
     const levelDetails = listOfLevelsSolved.map(oneLevel => {
         return getLevelDetailsByAddress(oneLevel, networkId);
@@ -23,8 +23,7 @@ export const getPercentageOfLevelsSolvedByPlayer = async (playerAddress, network
     if (!(playerAddress || networkId)) {
         return
     }
-    const proxyStatsAddress = getProxyStatsContractAddressInNetwork(networkId)
-    const statsContract = await getStatsContract(proxyStatsAddress, playerAddress)
+    const statsContract = getStatsContract(networkId)
     return await getPercentageOfLevelsSolved(statsContract, playerAddress)
 }
 
@@ -32,8 +31,7 @@ export const getTotalPlayers = async (networkId) => {
     if (!networkId) {
         return
     }
-    const proxyStatsAddress = getProxyStatsContractAddressInNetwork(networkId)
-    const statsContract = await getStatsContract(proxyStatsAddress)
+    const statsContract = getStatsContract(networkId)
     return await getTotalNumberOfPlayers(statsContract)
 }
 
@@ -41,8 +39,7 @@ export const getTotalFailures = async (networkId) => {
     if (!networkId) {
         return
     }
-    const proxyStatsAddress = getProxyStatsContractAddressInNetwork(networkId)
-    const statsContract = await getStatsContract(proxyStatsAddress)
+    const statsContract = getStatsContract(networkId)
     return await getFailedSubmissions(statsContract)
 }
 
@@ -50,8 +47,7 @@ export const getTotalCompleted = async (networkId) => {
     if (!networkId) {
         return
     }
-    const proxyStatsAddress = getProxyStatsContractAddressInNetwork(networkId)
-    const statsContract = await getStatsContract(proxyStatsAddress)
+    const statsContract = getStatsContract(networkId)
     return await getCompletedLevels(statsContract)
 }
 
@@ -59,8 +55,7 @@ export const getTotalCreated = async (networkId) => {
     if (!networkId) {
         return
     }
-    const proxyStatsAddress = getProxyStatsContractAddressInNetwork(networkId)
-    const statsContract = await getStatsContract(proxyStatsAddress)
+    const statsContract = getStatsContract(networkId)
     return await getLevelsCreated(statsContract)
 }
 
@@ -68,14 +63,13 @@ export const checkIfPlayerExist = async (playerAddress, networkId) => {
     if (!(playerAddress || networkId)) {
         return
     }
-    const proxyStatsAddress = getProxyStatsContractAddressInNetwork(networkId)
-    const statsContract = await getStatsContract(proxyStatsAddress, playerAddress)
+    const statsContract = getStatsContract(networkId)
     return await statsContract.doesPlayerExist(playerAddress)
 }
 
 const getPercentageOfLevelsSolved = async (statsContract, playerAddress) => {
     const response = await statsContract.getPercentageOfLevelsCompleted(playerAddress)
-    const roundedPercentage = (Web3.utils.fromWei(response.toString()) * 100).toFixed(2)
+    const roundedPercentage = (formatEther(response) * 100).toFixed(2)
     return roundedPercentage
 }
 
@@ -152,19 +146,6 @@ const getLevelAddressesInNetwork = (networkId) => {
     return levelAddresses;
 }
 
-const getProxyStatsContractAddressInNetwork = (networkId) => {
-    const deployedNetworkData = getDeployData(networkId);
-    return deployedNetworkData['proxyStats'];
-}
-
-const getStatsContract = async (proxyStatsAddress, playerAddress) => {
-    const statsABI = require("contracts/build/contracts/metrics/Statistics.sol/Statistics.json");
-    let statsContract;
-    if (playerAddress) {
-        statsContract = getTruffleContract(statsABI, { from: playerAddress });
-    } else { 
-        statsContract = getTruffleContract(statsABI);
-    }
-    const statsContractInstance = await statsContract.at(proxyStatsAddress)
-    return statsContractInstance;
-}
+// Statistics is read through its proxy.
+const getStatsContract = (networkId) =>
+    contractAt(statisticsAbi, getDeployData(networkId).proxyStats)

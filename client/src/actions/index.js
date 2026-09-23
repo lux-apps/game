@@ -1,8 +1,5 @@
-export const CONNECT_WEB3 = "CONNECT_WEB3";
-export const connectWeb3 = web3 => ({ type: CONNECT_WEB3, web3 })
-
-export const SET_GAS_PRICE = "SET_GAS_PRICE";
-export const setGasPrice = gasPrice => ({ type: SET_GAS_PRICE, gasPrice })
+export const CONNECT_WALLET = "CONNECT_WALLET";
+export const connectWallet = () => ({ type: CONNECT_WALLET })
 
 export const SET_NETWORK_ID = "SET_NETWORK_ID";
 export const setNetworkId = id => ({ type: SET_NETWORK_ID, id })
@@ -30,12 +27,6 @@ export const submitLevelInstance = (level, completed) => ({ type: SUBMIT_LEVEL_I
 
 export const SYNC_PLAYER_PROGRESS = "SYNC_PLAYER_PROGRESS";
 export const syncPlayerProgress = () => ({ type: SYNC_PLAYER_PROGRESS })
-
-export const COLLECT_STATS = "COLLECT_STATS";
-export const collectStats = () => ({ type: COLLECT_STATS })
-
-export const SET_BLOCK_NUM = "SET_BLOCK_NUM";
-export const setBlockNum = num => ({ type: SET_BLOCK_NUM, blockNum: num })
 
 export const SET_LANG = "SET_LANG";
 export const setLang = (lang) => ({ type: SET_LANG, lang }) 

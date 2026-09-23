@@ -19,7 +19,7 @@ const contractsReducer = function(state = initialState, action) {
       return {
         ...state,
         levels: {
-          ...state,
+          ...state.levels,
           [action.level.deployedAddress]: action.instance
         },
         nonce: state.nonce + 1
@@ -30,7 +30,7 @@ const contractsReducer = function(state = initialState, action) {
         return {
           ...state,
           levels: {
-            ...state,
+            ...state.levels,
             [action.level.deployedAddress]: undefined
           },
           nonce: state.nonce + 1

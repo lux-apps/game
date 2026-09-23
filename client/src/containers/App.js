@@ -10,6 +10,7 @@ import { bindActionCreators } from "redux";
 import { withRouter } from "../hoc/withRouter";
 import { randGoodIcon, randBadIcon } from "../utils/^^";
 import { deployAdminContracts } from "../utils/deploycontract";
+import { switchNetwork } from "../utils/ethutil";
 import {
   networkOnDeprecationOrDeprecated,
   isDeprecatedNetwork,
@@ -68,50 +69,14 @@ class App extends React.Component {
 
     // change the network to Sepolia network
     async function switchToSepolia() {
-      let elements = document.querySelectorAll(".progress-bar-wrapper");
+      const elements = document.querySelectorAll(".progress-bar-wrapper");
       const deployWindow = document.querySelectorAll(".deploy-window-bg");
       try {
-        await window.ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [
-            {
-              chainId: `0x${Number(constants.NETWORKS.SEPOLIA.id).toString(
-                16
-              )}`,
-            },
-          ], //if on wrong network giving option to switch to sepolia network.
-        });
+        await switchNetwork(constants.NETWORKS.SEPOLIA);
         deployWindow[0].style.display = "none";
-      } catch (switchError) {
-        // This error code indicates that the chain has not been added to MetaMask.
-        if (switchError.code === 4902) {
-          try {
-            await window.ethereum.request({
-              method: "wallet_addEthereumChain",
-              params: [
-                {
-                  chainId: [
-                    {
-                      chainId: `0x${Number(
-                        constants.NETWORKS.SEPOLIA.id
-                      ).toString(16)}`,
-                    },
-                  ],
-                },
-              ],
-            });
-            deployWindow[0].style.display = "none";
-          } catch (addError) {
-            if (addError.code === 4001) {
-              //User has rejected changing the request
-              elements[0].style.display = "none";
-            }
-            console.error("Can't add nor switch to the selected network");
-          }
-        } else if (switchError.code === 4001) {
-          //User has rejected changing the request
-          if (elements[0]) elements[0].style.display = "none";
-        }
+      } catch (error) {
+        if (elements[0]) elements[0].style.display = "none";
+        if (error.code !== 4001) console.error("Can't add nor switch to the selected network");
       }
     }
 

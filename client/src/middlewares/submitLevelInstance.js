@@ -1,6 +1,6 @@
+import { isAddressEqual, parseEventLogs } from 'viem'
 import * as actions from '../actions';
 import { loadTranslations } from '../utils/translations'
-import { getGasFeeDetails } from '../utils/ethutil'
 import { getPercentageOfLevelsSolvedByPlayer } from '../utils/statsContract'
 
 let language = localStorage.getItem('lang')
@@ -12,21 +12,18 @@ const submitLevelInstance = store => next => async action => {
 
   const state = store.getState()
   if (
-    !state.network.web3 ||
+    !state.network.connected ||
     !state.contracts.lux ||
     !state.contracts.levels[action.level.deployedAddress] ||
-    !state.player.address ||
-    !state.network.gasPrice
+    !state.player.address
   ) return next(action)
 
   console.asyncInfo(`@good ${strings.submitLevelMessage}`)
-  const gasFeeDetails = await getGasFeeDetails(state.network, 2)
   let completed = await submitLevelInstanceUtil(
     state.contracts.lux,
     action.level.deployedAddress,
     state.contracts.levels[action.level.deployedAddress].address,
-    state.player.address,
-    gasFeeDetails
+    state.player.address
   )
   if (completed) {
     console.victory(`@good ${strings.wellDoneMessage}, ${strings.completedLevelMessage}`);
@@ -53,23 +50,11 @@ const submitLevelInstance = store => next => async action => {
 
 export default submitLevelInstance
 
-async function submitLevelInstanceUtil(lux, levelAddress, instanceAddress, player, gasFeeDetails) {
+async function submitLevelInstanceUtil(lux, levelAddress, instanceAddress, player) {
   try {
-    const data = { from: player, ...gasFeeDetails }
-    const tx = await lux.submitLevelInstance(instanceAddress, data);
-    if (tx.logs.length === 0) return false
-    else {
-      if (tx.logs.length === 0) return false
-      else {
-        const log = tx.logs[0].args;
-        const ethLevelAddress = log.level;
-        const ethPlayer = log.player;
-        if (player === ethPlayer && levelAddress === ethLevelAddress) {
-          return true
-        }
-        else return false
-      }
-    }
+    const receipt = await lux.submitLevelInstance(instanceAddress)
+    return parseEventLogs({ abi: lux.abi, eventName: 'LevelCompletedLog', logs: receipt.logs })
+      .some(({ args }) => isAddressEqual(args.player, player) && isAddressEqual(args.level, levelAddress))
   } catch (error) {
     console.error(error)
     return false
