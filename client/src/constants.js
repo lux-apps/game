@@ -31,12 +31,6 @@ export const NETWORKS_DEPRECATION = {};
 // Misc
 export const CLEAR_CONSOLE = !DEBUG;
 
-// Owner addresses
-export const ADDRESSES = {
-  [NETWORKS.LOCAL.name]: undefined,
-  [NETWORKS.SEPOLIA.name]: "0x09902A56d04a9446601a0d451E07459dC5aF0820",
-};
-
 // Core contract keys
 export const CORE_CONTRACT_NAMES = [
   "lux",
@@ -65,9 +59,6 @@ export const PATH_LEADERBOARD = `${PATH_ROOT}leaderboard`
 export const CUSTOM_LOGGING = true; /* TRUE on production */
 export const SHOW_ALL_COMPLETE_DESCRIPTIONS = false; /* FALSE on production */
 export const SHOW_VERSION = true;
-
-// export const ACTIVE_NETWORK = NETWORKS.SEPOLIA
-// export const ACTIVE_NETWORK = NETWORKS.LOCAL;
 
 let id_to_network = {};
 Object.keys(NETWORKS)

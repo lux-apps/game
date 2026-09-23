@@ -23,52 +23,23 @@ All this process is required in order to avoid to the users to resolve both vers
 
 ## **Usage**
 
-### **Testnet (mainet for lux XD)**
-
-- Select the network in the [`constants.js`](https://github.com/luxdefi/game/blob/client/src/constants.js) file by uncommenting the `ACTIVE_NETWORK` constant.
-
-- run the tool:
 ```bash
-yarn run supersede:level
+NETWORK=sepolia RPC_URL=<rpc url> PRIV_KEY=<operator key> yarn supersede:level
 ```
 
-The tool will guide the operator through the process. Operator is the account that will trigger the storage dump operations in the statistics contract. Operator address can be changed by editing script's `OPERATOR_ADDRESS` constant, although it is recommended that this be lux's owner.
+`NETWORK` picks `client/src/gamedata/deploy.<network>.json` (`local` by default) and `RPC_URL` the node (`http://127.0.0.1:8545` by default). The account behind `PRIV_KEY` signs every transaction and becomes the operator that runs the storage dump, so it must own Lux and the ProxyAdmin. Without `PRIV_KEY`, the node signs for `FROM`, or for its first unlocked account when `FROM` is unset, which is what anvil offers. The tool reads ABIs and bytecode from `contracts/out`, so run `forge build` first.
 
-The script contains a commented function `printEditedStorageSlots(oldAddress, newAddress)` that can be uncommented to prompt in the terminal all storage slots edited after the process. 
+The tool asks for the deployId and a confirmation; answers can also be piped in (`printf '8\ny\n' | yarn supersede:level`). If a replacement was interrupted, running it again resumes from the dump stage stored on chain.
 
-Lux contract will be halt during the operation, any call to  `createLevelInstance(Level _level)` or  `submitLevelInstance(address payable _instance)` will revet with `"Contract locked due maintenance operations"` string.
+Lux is halted during the operation: any call to `createLevelInstance(Level _level)` or `submitLevelInstance(address payable _instance)` reverts with `"Contract locked due maintenance operations"`.
 
-Original statistics implementation is hardcoded in `downgradeStatisticsSupersederToStatisticsAndSaveDeployData()` function it is not needed to deploy a new instance, ensure that you hardcode the correct address.
+At the end the proxy returns to the Statistics implementation named by `implementation` in the deploy data, and the deploy data records the substitution under `supersededAddresses`. Dump transactions carry a fixed gas limit (`DUMP_GAS`) because the dump functions work until `gasleft()` runs low.
 
-Dumping transactions gas usage can be tuned in `dumpData()` function.
+### **Test in a local fork**
 
-
-### **Test in local fork**
-
-- Set lux owner as main account in the hardhat local node by adding following configuration to [`hardhat.config.js`](https://github.com/luxdefi/game/blob/master/contracts/hardhat.config.js)
-```javascript
-
-...
-
-const ownerPrivKey = process.env.PRIV_KEY;
-
-module.exports = {
-
-...
-
-    networks: {
-        hardhat: {
-            chainId: 1337,
-            accounts: [{ privateKey: ownerPrivKey, balance: "1000000000000000000000" }],
-        },
-    },
-};
+```bash
+anvil --fork-url <rpc url> --auto-impersonate
+NETWORK=sepolia FROM=<Lux owner> yarn supersede:level
 ```
 
-- Uncomment script's `DEPLOY_DATA_PATH` constant to match with forked network.
-- Set script's `OPERATOR_ADDRESS` constant manually.
-- Run hardhat local node with forked network (command must be executed in `./contracts`, relative to project root):
-```
-yarn hardhat --max-memory 8192  node --fork <provider api url>
-```
-- Run tool as testnet. 
+With `--auto-impersonate` anvil signs for any address, so `FROM` can be the real owner of Lux and the ProxyAdmin.

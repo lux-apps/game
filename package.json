@@ -11,6 +11,7 @@
     "network": "anvil --chain-id 1337",
     "build:game": "yarn compile:contracts && yarn --cwd client build",
     "start:game": "yarn --cwd client dev",
-    "test:contracts": "cd contracts && forge test"
+    "test:contracts": "cd contracts && forge test",
+    "supersede:level": "node client/scripts/supersede_level.mjs"
   }
 }
