@@ -23,58 +23,56 @@ You can find the current, official version at: [infinite.game](https://infinite.
 
 There are three components to Lux that are needed to run/deploy in order to work with it locally:
 
-- Test Network - A testnet that is running locally, like ganache, hardhat network, geth, etc
-- Contract Deployment - In order to work with the contracts, they must be deployed to the locally running testnet
-- The Client/Frontend - This is a React app that runs locally and can be accessed on localhost:3000
+- Test Network - A local chain: anvil, from [Foundry](https://getfoundry.sh/)
+- Contract Deployment - In order to work with the contracts, they must be deployed to the local chain
+- The Client/Frontend - A React app served by Vite, on localhost:5173
 
 In order to install, build, and run Lux locally, follow these instructions:
 
-0. Be sure to use a compatible Node version. If you use `nvm` you can run `nvm use` at the root level to be sure to select a compatible version.
+0. Be sure to use a compatible Node version. If you use `nvm` you can run `nvm use` at the root level to be sure to select a compatible version. Install [Foundry](https://getfoundry.sh/) for `forge` and `anvil`.
 
 1. Clone the repo and install dependencies:
 
     ```bash
-    git clone git@github.com:luxdefi/game.git
+    git clone --recurse-submodules git@github.com:luxdefi/game.git
     yarn install
     ```
 
-2. Start deterministic rpc
+2. Start a local chain (chain id 1337)
 
     ```bash
     yarn network
     ```
 
-3. Import one of the private keys from the ganache-cli output to your Metamask wallet.
+3. Import one of the private keys anvil prints into your wallet, on the network `http://127.0.0.1:8545`, chain id 1337.
 4. Compile contracts
 
     ```bash
     yarn compile:contracts
     ```
 
-5. Set `client/src/constants.js` `ACTIVE_NETWORK` to `NETWORKS.LOCAL`
-6. Deploy contracts
+5. Deploy contracts from anvil's first account. This writes `client/src/gamedata/deploy.local.json`.
 
     ```bash
-    yarn deploy:contracts
+    yarn deploy:contracts --unlocked --sender 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
     ```
 
-7. Start Game locally
+6. Start Game locally
 
     ```bash
     yarn start:game
     ```
 
+The game plays on whichever network the wallet is connected to.
+
 ### Running locally (sepolia network)
 
-The same as using the local network but steps 2, 3 and 6 are not necessary.
-
-In this case, replace point 5 with:
-5. Set `client/src/constants.js` `ACTIVE_NETWORK` to `NETWORKS.SEPOLIA`
+The same as using the local network but steps 2, 3 and 5 are not necessary: point the wallet at Sepolia.
 
 ### Running tests
 
 ```bash
-yarn test:contracts
+yarn test    # forge tests and the client's vitest suite
 ```
 
 ### Building
@@ -85,20 +83,13 @@ yarn build:game
 
 ### Deploying
 
-You will normally need to deploy it on a local network, for this you can just run `yarn deploy:contracts` and all the contracts will be deployed on your local node running on `localhost:8545` and you will be able to check each level address in the `deploy.local.json` file.
+`yarn deploy:contracts` runs `contracts/script/Deploy.s.sol`, which deploys every contract and level and writes their addresses to `client/src/gamedata/deploy.<network>.json`. The network is `local` on chain 1337 and otherwise comes from `NETWORK`:
 
-To deploy the contracts on Sepolia, first set the `ACTIVE_NETWORK` variable in `constants.js` and then edit `deploy.sepolia.json`. This file keeps a history of all level and contract instances. To deploy a new instance, add an "x" entry to the array, like so:
-
-```json
-{
-  "0": "x",
-  "1": "0x4b1d5eb6cd2849c7890bcacd63a6855d1c0e79d5",
-  "2": "0xdf51a9e8ce57e7787e4a27dd19880fd7106b9a5c",
-  ...
-},
+```bash
+NETWORK=sepolia RPC_URL=<rpc url> yarn deploy:contracts --private-key <deployer key>
 ```
 
-Then run `yarn deploy:contracts`.
+To replace a single deployed level, keeping its statistics, see [supersede_level.md](client/scripts/docs/supersede_level.md).
 
 ## Contributing
 
