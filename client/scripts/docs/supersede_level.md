@@ -24,7 +24,7 @@ All this process is required in order to avoid to the users to resolve both vers
 ## **Usage**
 
 ```bash
-NETWORK=sepolia RPC_URL=<rpc url> PRIV_KEY=<operator key> yarn supersede:level
+NETWORK=lux-testnet RPC_URL=https://api.lux-test.network/v1/chain/C/rpc PRIV_KEY=<operator key> yarn supersede:level
 ```
 
 `NETWORK` picks `client/src/gamedata/deploy.<network>.json` (`local` by default) and `RPC_URL` the node (`http://127.0.0.1:8545` by default). The account behind `PRIV_KEY` signs every transaction and becomes the operator that runs the storage dump, so it must own Lux and the ProxyAdmin. Without `PRIV_KEY`, the node signs for `FROM`, or for its first unlocked account when `FROM` is unset, which is what anvil offers. The tool reads ABIs and bytecode from `contracts/out`, so run `forge build` first.
@@ -39,7 +39,7 @@ At the end the proxy returns to the Statistics implementation named by `implemen
 
 ```bash
 anvil --fork-url <rpc url> --auto-impersonate
-NETWORK=sepolia FROM=<Lux owner> yarn supersede:level
+NETWORK=lux-testnet FROM=<Lux owner> yarn supersede:level
 ```
 
 With `--auto-impersonate` anvil signs for any address, so `FROM` can be the real owner of Lux and the ProxyAdmin.

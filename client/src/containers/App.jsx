@@ -58,11 +58,11 @@ class App extends React.Component {
     );
 
     // change the network to Sepolia network
-    async function switchToSepolia() {
+    async function switchToLux() {
       const elements = document.querySelectorAll(".progress-bar-wrapper");
       const deployWindow = document.querySelectorAll(".deploy-window-bg");
       try {
-        await switchNetwork(constants.NETWORKS.SEPOLIA);
+        await switchNetwork(constants.NETWORKS.LUX_TESTNET);
         deployWindow[0].style.display = "none";
       } catch (error) {
         if (elements[0]) elements[0].style.display = "none";
@@ -114,8 +114,8 @@ class App extends React.Component {
                   <button className="buttons" onClick={deployAdminContracts}>
                     {strings.deployGame}
                   </button>
-                  <button className="buttons" onClick={switchToSepolia}>
-                    {strings.switchToSepolia}
+                  <button className="buttons" onClick={switchToLux}>
+                    {strings.switchToLux}
                   </button>
                 </div>
                 <p className="deploy-note">{strings.deployNote}</p>
@@ -131,8 +131,8 @@ class App extends React.Component {
                 {strings.deployMessage}
                 {supportedNetworksList(supportedNetworks)}
                 <div className="choice-buttons">
-                  <button className="buttons" onClick={switchToSepolia}>
-                    {strings.switchToSepolia}
+                  <button className="buttons" onClick={switchToLux}>
+                    {strings.switchToLux}
                   </button>
                   {!isDeprecatedNetwork(this.props.networkId) && 
                     <button className="buttons" onClick={continueAnyway}>

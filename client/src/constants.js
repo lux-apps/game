@@ -1,4 +1,5 @@
-import { localhost, sepolia } from "viem/chains";
+import { localhost } from "viem/chains";
+import { luxTestnet } from "./chains";
 
 export const DEBUG = import.meta.env.DEV;
 export const DEBUG_REDUX = DEBUG;
@@ -13,14 +14,10 @@ export const NETWORKS = {
     id: "1337",
     chain: localhost,
   },
-  SEPOLIA: {
-    name: "sepolia",
-    id: "11155111",
-    chain: sepolia,
-    explorer: {
-      apiKey: import.meta.env.VITE_SEPOLIA_EXPLORER_API_KEY,
-      apiHost: "https://api.etherscan.io/v2",
-    },
+  LUX_TESTNET: {
+    name: "lux-testnet",
+    id: "96368",
+    chain: luxTestnet,
   },
 };
 

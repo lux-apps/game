@@ -61,9 +61,9 @@ In order to install, build, and run Lux locally, follow these instructions:
 
 The game plays on whichever network the wallet is connected to.
 
-### Running locally (sepolia network)
+### Running against Lux Testnet
 
-The same as using the local network but steps 2, 3 and 5 are not necessary: point the wallet at Sepolia.
+The same as using the local network but steps 2, 3 and 5 are not necessary: point the wallet at Lux Testnet (chain 96368, `https://api.lux-test.network/v1/chain/C/rpc`).
 
 ### Running tests
 
@@ -82,7 +82,9 @@ yarn build:game
 `yarn deploy:contracts` runs `contracts/script/Deploy.s.sol`, which deploys every contract and level and writes their addresses to `client/src/gamedata/deploy.<network>.json`. The network is `local` on chain 1337 and otherwise comes from `NETWORK`:
 
 ```bash
-NETWORK=sepolia RPC_URL=<rpc url> yarn deploy:contracts --private-key <deployer key>
+cast wallet import lux-deployer --interactive   # once: the key goes into foundry's encrypted keystore
+NETWORK=lux-testnet RPC_URL=https://api.lux-test.network/v1/chain/C/rpc \
+  yarn deploy:contracts --account lux-deployer --sender <deployer address>
 ```
 
 To replace a single deployed level, keeping its statistics, see [supersede_level.md](client/scripts/docs/supersede_level.md).

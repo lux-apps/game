@@ -25,3 +25,28 @@ jobs:
     - run: yarn install --frozen-lockfile
     - run: yarn test:contracts
     - run: yarn test:client
+
+  site:
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: linux-amd64
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        submodules: recursive
+    - uses: actions/setup-node@v5
+      with:
+        node-version-file: .nvmrc
+    - uses: foundry-rs/foundry-toolchain@v1
+      with:
+        version: v1.8.3
+    - run: corepack enable
+    - run: yarn install --frozen-lockfile
+    - run: yarn build:game
+    - uses: hanzoai/ci/.github/actions/site@v1
+      with:
+        slug: game
+        dir: client/build
+      env:
+        KMS_CLIENT_ID: ${{ secrets.KMS_CLIENT_ID }}
+        KMS_CLIENT_SECRET: ${{ secrets.KMS_CLIENT_SECRET }}

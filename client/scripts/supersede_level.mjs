@@ -1,7 +1,7 @@
 // Replaces a deployed level with a fresh deployment of its current code and
 // moves its statistics to the new address (see docs/supersede_level.md).
 //
-//   NETWORK=local|sepolia  RPC_URL=<url>  [PRIV_KEY=0x… | FROM=0x…]  node supersede_level.mjs
+//   NETWORK=local|lux-testnet  RPC_URL=<url>  [PRIV_KEY=0x… | FROM=0x…]  node supersede_level.mjs
 //
 // Without PRIV_KEY the node signs for FROM, or for its first unlocked
 // account (anvil). The signer operates the migration, so it must own Lux
@@ -20,9 +20,10 @@ import {
   toHex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { localhost, sepolia } from "viem/chains";
+import { localhost } from "viem/chains";
+import { luxTestnet } from "../src/chains.js";
 
-const CHAINS = { local: localhost, sepolia };
+const CHAINS = { local: localhost, "lux-testnet": luxTestnet };
 const NETWORK = process.env.NETWORK ?? "local";
 const RPC_URL = process.env.RPC_URL ?? "http://127.0.0.1:8545";
 const chain = CHAINS[NETWORK];
