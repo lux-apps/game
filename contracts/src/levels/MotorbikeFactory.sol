@@ -36,8 +36,13 @@ contract MotorbikeFactory is Level {
     return address(motorbike);
   }
 
-  function validateInstance(address payable _instance, address _player) public override returns (bool) {
+  // Won when the engine implementation has been initialised in its own context,
+  // which only the exploit does: the proxy initialises its own storage, so the
+  // implementation's upgrader is zero until someone seizes it. The original check
+  // (the engine's code is gone) cannot hold since EIP-6780, which deletes code on
+  // selfdestruct only for a contract created in the same transaction.
+  function validateInstance(address payable _instance, address _player) public view override returns (bool) {
     _player;
-    return engines[_instance].code.length == 0;
+    return Engine(engines[_instance]).upgrader() != address(0);
   }
 }

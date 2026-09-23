@@ -1,6 +1,6 @@
 La motocicleta de Lux tiene un nuevo diseño de motor actualizable.
 
-¿Serías capaz de `selfdestruct` su motor y romper la moto?
+¿Serías capaz de tomar el control de su motor, convirtiéndote en el `upgrader` de la implementación del motor?
 
 Cosas que pueden ayudar:
 - [EIP-1967](https://eips.ethereum.org/EIPS/eip-1967)

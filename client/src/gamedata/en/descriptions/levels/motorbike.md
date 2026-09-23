@@ -1,6 +1,6 @@
 Lux's motorbike has a brand new upgradeable engine design.
 
-Would you be able to `selfdestruct` its engine and make the motorbike unusable ?
+Would you be able to take control of its engine — become the `upgrader` of the engine implementation itself?
 
 Things that might help:
 

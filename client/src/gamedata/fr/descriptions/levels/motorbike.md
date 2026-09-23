@@ -1,6 +1,6 @@
 La moto d'Lux a une toute nouvelle conception de moteur évolutive.
 
-Seriez-vous capable d'autodétruire (`selfdestruct`) son moteur et de rendre la moto inutilisable ?
+Seriez-vous capable de prendre le contrôle de son moteur, en devenant l'`upgrader` de l'implémentation du moteur elle-même ?
 
 &nbsp; Voici quelques coinseils:
 
