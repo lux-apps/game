@@ -1,8 +1,6 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {bindActionCreators} from 'redux'
 import '../styles/page.css'
-import * as actions from '../actions';
 import { getLevelsSolvedByPlayer, checkIfPlayerExist, getTotalCompleted, getTotalFailures, getTotalCreated, getTotalPlayers } from '../utils/statsContract'
 import { validateAddress } from '../utils/ethutil'
 import Statistic from '../components/stats/Statistic';
@@ -156,13 +154,4 @@ function mapStateToProps(state) {
   }
 }
 
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators({
-    collectStats: actions.collectStats
-  }, dispatch)
-}
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Stats)
+export default connect(mapStateToProps)(Stats)
