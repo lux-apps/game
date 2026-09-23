@@ -1,5 +1,3 @@
-import _ from 'lodash'
-import { push } from 'react-router-redux'
 import * as actions from '../actions';
 import * as constants from '../constants';
 
@@ -30,15 +28,13 @@ const activateLevel = store => next => action => {
   // -- if it is a number then match level based on number
   // -- make sure you can only index by id when you are on a chain you can deploy to
   const key = canDeploy ? getLevelKey(action.address) : "deployedAddress"
-  let activeLevel = _.find(
-    state.gamedata.levels,
+  let activeLevel = state.gamedata.levels.find(
     level => +level[key] === +action.address
   )
 
   // If not found, search levels by id
   if (!activeLevel) {
-    activeLevel = _.find(
-      state.gamedata.levels,
+    activeLevel = state.gamedata.levels.find(
       level => +level["deployId"] === +action.address
     )
   }
@@ -58,7 +54,7 @@ const activateLevel = store => next => action => {
 
   // -> 404
   if (!activeLevel && !isLocalDeployed(network_id)) {
-    store.dispatch(push(constants.PATH_NOT_FOUND))
+    document.location.replace(constants.PATH_NOT_FOUND)
     return
   }
 

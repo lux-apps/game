@@ -1,9 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 
 import reducer from './reducers';
-import thunkMiddleware from 'redux-thunk';
-import { routerMiddleware } from 'react-router-redux';
-//import { browserHistory } from 'react-router';
 import { createLogger } from 'redux-logger';
 import { createStore, applyMiddleware, compose } from 'redux';
 
@@ -16,10 +13,7 @@ import setPlayerAddress from './middlewares/setPlayerAddress'
 import setNetwork from './middlewares/setNetwork'
 import syncPlayerProgress from './middlewares/syncPlayerProgress'
 import setLanguage from './middlewares/setLanguage';
-import { createBrowserHistory } from 'history';
 import * as constants from '../src/constants';
-
-export const history = createBrowserHistory();
 
 const middlewares = [
   loadGamedata,
@@ -31,8 +25,6 @@ const middlewares = [
   setNetwork,
   syncPlayerProgress,
   setLanguage,
-  thunkMiddleware,
-  routerMiddleware(history)
 ];
 if(constants.DEBUG_REDUX) {
   middlewares.splice( 0, 0, createLogger({collapsed: true}) )

@@ -1,17 +1,15 @@
 import React, { Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
-import { store, history } from "./store";
-import { syncHistoryWithStore } from "react-router-redux";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { store } from "./store";
+import { BrowserRouter as Router, Route, Routes } from "react-router";
 import * as ethutil from "./utils/ethutil";
 import "bootstrap/dist/css/bootstrap.css";
 import "./styles/app.css";
 import * as actions from "../src/actions";
 import * as constants from "../src/constants";
 import "./utils/^^";
-import * as Sentry from "@sentry/browser";
-import { Integrations } from "@sentry/tracing";
+import * as Sentry from "@sentry/react";
 import App from "./containers/App";
 import NotFound404 from "./components/not-found/NotFound404";
 import Header from "./containers/Header";
@@ -27,7 +25,7 @@ const Stats = nonlazy(import("./containers/Stats"));
 Sentry.init({
   dsn: constants.SENTRY_DSN,
   debug: false,
-  integrations: [new Integrations.BrowserTracing()],
+  integrations: [Sentry.browserTracingIntegration()],
   tracesSampleRate: 1.0,
   release: constants.VERSION,
 });
@@ -45,7 +43,7 @@ const container = document.getElementById("root");
 const root = createRoot(container);
 root.render(
   <Provider store={store}>
-    <Router history={syncHistoryWithStore(history, store)}>
+    <Router>
       <Suspense fallback={<div>Loading...</div>}>
         <Header></Header>
         <Routes>
@@ -53,7 +51,7 @@ root.render(
           <Route path={constants.PATH_LEVEL} element={<Level />} />
           <Route path={constants.PATH_STATS} element={<Stats />} />
           <Route path={constants.PATH_LEADERBOARD} element={<Leaderboard />} />
-          <Route exact path="/" element={<App />} />
+          <Route path="/" element={<App />} />
           <Route path="*" element={<NotFound404 />} />
         </Routes>
       </Suspense>

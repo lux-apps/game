@@ -1,7 +1,6 @@
 import React from "react";
 import Mosaic from "./Mosaic";
 import Footer from "../components/common/Footer";
-import ReactGA from "react-ga";
 import * as constants from "../constants";
 import { loadTranslations } from "../utils/translations";
 import parse from "html-react-parser";
@@ -29,10 +28,6 @@ class App extends React.Component {
         this.setState({ chainId: Number(id) });
       });
     }
-
-    // Analytics
-    ReactGA.initialize(constants.GOOGLE_ANALYTICS_ID);
-    ReactGA.pageview(window.location.pathname);
   }
 
   componentDidUpdate(prevProps) {

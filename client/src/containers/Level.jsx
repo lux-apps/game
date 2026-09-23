@@ -8,7 +8,7 @@ import MarkdownComponent from "../components/common/Markdown";
 import * as actions from "../actions";
 import * as constants from "../constants";
 import { loadTranslations } from "../utils/translations";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import getlevelsdata, { levelImageFallback } from "../utils/getlevelsdata";
 import { withRouter } from "../hoc/withRouter";
 import { getLevelKey } from "../utils/contractutil";

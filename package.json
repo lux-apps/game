@@ -1,19 +1,8 @@
 {
   "private": true,
-  "workspaces": {
-    "packages": [
-      "contracts",
-      "client",
-      "deps/hljs"
-    ]
-  },
-  "dependencies": {
-    "highlight.js": "^10.7.2",
-    "react-loader-spinner": "^5.3.4"
-  },
-  "resolutions": {
-    "**/highlight.js": "10.7.2-local"
-  },
+  "workspaces": [
+    "client"
+  ],
   "scripts": {
     "test": "cd contracts && forge test",
     "compile:contracts": "cd contracts && forge build",

@@ -1,6 +1,4 @@
 import * as ethutil from './ethutil'
-import { createRainbow } from 'rainbow-color'
-import { rgbaString } from 'color-map'
 import { loadTranslations } from './translations'
 import * as constants from '../constants'
 let language = localStorage.getItem('lang')
@@ -66,10 +64,8 @@ function interceptConsole() {
     let c = 0
     const m = 20
     const s = 20
-    const rainbow = createRainbow(m)
     const interval = setInterval(() => {
-      const rawColor = rainbow[c]
-      const color = rgbaString(rawColor)
+      const color = `hsl(${Math.round(300 * c / (m - 1))}, 100%, 50%)`
       defaultConsole.info(
         `%c${msg1}`,
         `color: rgba(0, 0, 0, 0);

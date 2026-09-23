@@ -1,10 +1,10 @@
-import axios from "axios";
 import { ALIAS_PATH } from "../../constants";
 
 const getAliases = async () => { 
     try { 
-        const response = await axios.get(ALIAS_PATH)
-        window.aliases = response.data
+        const response = await fetch(ALIAS_PATH)
+        if (!response.ok) throw new Error(`${ALIAS_PATH}: ${response.status}`)
+        window.aliases = await response.json()
     } catch (err) { 
         console.log(err)
     }

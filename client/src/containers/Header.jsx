@@ -1,13 +1,11 @@
-import React from "react";
-import onClickOutside from 'react-onclickoutside'
+import React, { createRef } from "react";
 import { connect } from "react-redux";
 import { withRouter } from "../hoc/withRouter";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { bindActionCreators } from "redux";
 import * as actions from "../actions";
 import * as constants from "../constants";
 import { loadTranslations } from "../utils/translations";
-import PropTypes from "prop-types";
 import { ProgressBar } from "react-loader-spinner";
 import { svgFilter } from "../utils/svg";
 import { switchNetwork } from "../utils/ethutil";
@@ -23,6 +21,7 @@ class Header extends React.Component {
       activeDropdown: null,
       multiDDOpen: false,
     };
+    this.containerRef = createRef();
 
     if (this.props.connected) {
       window.ethereum.request({ method: "eth_chainId" }).then((id) => {
@@ -30,10 +29,6 @@ class Header extends React.Component {
       });
     }
   }
-
-  static propTypes = {
-    location: PropTypes.object.isRequired,
-  };
 
   setActiveTab(tabIndex) {
     const { activeDropdown } = this.state;
@@ -62,13 +57,11 @@ class Header extends React.Component {
   }
 
   componentDidMount() {
-    // var black = getComputedStyle(document.documentElement).getPropertyValue(
-    //   "--black"
-    // );
-    // var primaryColor = getComputedStyle(document.documentElement).getPropertyValue(
-    //   "--primary-color"
-    // );
-    // if(primaryColor === black) this.toggleDarkMode()
+    document.addEventListener("mousedown", this.handleClickOutside);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener("mousedown", this.handleClickOutside);
   }
 
   componentDidUpdate(prevProps) {
@@ -183,8 +176,10 @@ class Header extends React.Component {
     }
   }
 
-  handleClickOutside = () => {
-    this.closeDropdown();
+  handleClickOutside = (event) => {
+    if (!this.containerRef.current.contains(event.target)) {
+      this.closeDropdown();
+    }
   }
 
   render() {
@@ -205,7 +200,7 @@ class Header extends React.Component {
     
     const ddOpen = Boolean(this.state.multiDDOpen);
     return (
-      <div onClick={() => this.closeDropdown()}>
+      <div ref={this.containerRef} onClick={() => this.closeDropdown()}>
         <div className="lines">
           <center>
             <hr className="top" />
@@ -417,4 +412,4 @@ function mapDispatchToProps(dispatch) {
   );
 }
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(onClickOutside(Header)));
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Header));

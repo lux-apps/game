@@ -1,5 +1,5 @@
 import React from "react";
-import Filter from "bad-words"
+import { Filter } from "bad-words"
 import { useToast } from "../utils/Toast";
 import { checkIfAliasIsPresent } from "./checkIfAliasExist";
 

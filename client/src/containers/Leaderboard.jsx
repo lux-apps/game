@@ -7,7 +7,6 @@ import Search from "../components/leaderboard/Search";
 import { getNetworkNamefromId } from "../utils/ethutil";
 import { NETWORKS } from "../constants";
 import Footer from "../components/common/Footer";
-import axios from "axios";
 import { ALIAS_PATH, getLeaderboardPath } from "../constants";
 
 const playersPerPage = 20;
@@ -16,8 +15,9 @@ let aliases = {}
 
 const fetchAliases = async () => {
     try {
-        const response = await axios.get(ALIAS_PATH)
-        aliases = response.data
+        const response = await fetch(ALIAS_PATH)
+        if (!response.ok) throw new Error(`${ALIAS_PATH}: ${response.status}`)
+        aliases = await response.json()
     } catch (err) { 
         console.log("Failed to fetch aliases")
     }
@@ -55,9 +55,9 @@ function Leaderboard() {
     }, [initateCurrentlySelectedChain])
 
     useEffect(() => {
-        window.ethereum.on('networkChanged', handleNetworkChange)
+        window.ethereum.on('chainChanged', handleNetworkChange)
         return () => { 
-            window.ethereum.removeListener('networkChanged', handleNetworkChange)
+            window.ethereum.removeListener('chainChanged', handleNetworkChange)
         }
     }, [handleNetworkChange])
 
@@ -67,8 +67,10 @@ function Leaderboard() {
                 return;
             }
             const leaderboardNetworkName = getLeaderboardNetworkNameFromNetworkName(currentNetworkName)
-            const response = await axios.get(getLeaderboardPath(leaderboardNetworkName))
-            const result = response.data
+            const path = getLeaderboardPath(leaderboardNetworkName)
+            const response = await fetch(path)
+            if (!response.ok) throw new Error(`${path}: ${response.status}`)
+            const result = await response.json()
             const playersWithRank = result.map(assignRank).filter(isScoreNonZero).map(assignAlias)
             setPlayersWithRank(playersWithRank)
             setSearchResult(playersWithRank)

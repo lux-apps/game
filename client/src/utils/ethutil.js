@@ -169,4 +169,4 @@ export const switchNetwork = async ({ chain }) => {
 export const getNetworkFromId = (networkId) =>
   Object.values(NETWORKS).find((network) => network && network.id === networkId.toString());
 
-export const getNetworkNamefromId = (networkId) => getNetworkFromId(networkId).name;
+export const getNetworkNamefromId = (networkId) => getNetworkFromId(networkId)?.name;

@@ -2,7 +2,6 @@ import * as actions from '../actions';
 import { loadTranslations } from '../utils/translations'
 import { getDeployData } from '../utils/deploycontract'
 import gamedata from '../gamedata/gamedata.json'
-// import { store, history } from "./../store";
 let language = localStorage.getItem('lang')
 let strings = loadTranslations(language)
 
