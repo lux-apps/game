@@ -72,8 +72,8 @@ window.loadContracts = async function () {
 // write helper function to create a new issue, this function should only be called when all the levels have been deployed
 export const raiseIssue = async () => {
   const url = newGithubIssueUrl({
-    user: 'OpenZeppelin',
-    repo: 'lux',
+    user: 'lux-apps',
+    repo: 'game',
     template: 'New-Network-Support.md',
     title: 'New Network Support - [Network Name]',
   });

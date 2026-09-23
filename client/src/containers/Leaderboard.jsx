@@ -1,182 +1,90 @@
 import "../styles/leaderboard.css";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { getAbiItem } from "viem";
+import { abi as luxAbi } from "../../../contracts/src/Lux.sol?artifact";
 import LeaderList from "../components/leaderboard/LeaderList";
 import Headers from "../components/leaderboard/Headers";
-import { useEffect, useState, useCallback } from "react";
-import ReactPaginate from 'react-paginate';
 import Search from "../components/leaderboard/Search";
-import { getNetworkNamefromId } from "../utils/ethutil";
-import { NETWORKS } from "../constants";
 import Footer from "../components/common/Footer";
-import { ALIAS_PATH, getLeaderboardPath } from "../constants";
+import { getLogs } from "../utils/ethutil";
+import { getDeployData } from "../utils/deploycontract";
+import { rank } from "../utils/leaderboard";
 
 const playersPerPage = 20;
+const completed = getAbiItem({ abi: luxAbi, name: "LevelCompletedLog" });
 
-let aliases = {}
-
-const fetchAliases = async () => {
-    try {
-        const response = await fetch(ALIAS_PATH)
-        if (!response.ok) throw new Error(`${ALIAS_PATH}: ${response.status}`)
-        aliases = await response.json()
-    } catch (err) { 
-        console.log("Failed to fetch aliases")
-    }
-}   
-
-fetchAliases()
-
-function Leaderboard() { 
-    const [offset, setOffset] = useState(0);
-    const [playersWithRank, setPlayersWithRank] = useState([])
-    const [searchResult, setSearchResult] = useState([])
-    const [searchKeyword, setSearchKeyword] = useState('')
-    const [currentNetworkName, setCurrentNetworkName] = useState('')
-
-    const pageCount = Math.ceil(searchResult.length / playersPerPage);
-    const endOffset = offset + playersPerPage;
-    const currentItems = searchResult.slice(offset, endOffset);
-
-    const handleNetworkChange = useCallback(async (networkId) => { 
-        if (!networkId) { 
-            return;
-        }
-        const networkName = getNetworkNamefromId(Number(networkId))
-        setCurrentNetworkName(networkName)
-    }, [])
-
-    const initateCurrentlySelectedChain = useCallback(async () => { 
-        const networkId = await window.ethereum.request({ method: 'eth_chainId' })
-        handleNetworkChange(networkId)
-    }, [handleNetworkChange])
-
-    // During the initial render
-    useEffect(() => { 
-        initateCurrentlySelectedChain()
-    }, [initateCurrentlySelectedChain])
+// The leaderboard is read from the chain the wallet is on: every completion
+// the Lux contract there has logged.
+function Leaderboard() {
+    const networkId = useSelector((state) => state.network.networkId);
+    const [players, setPlayers] = useState([]);
+    const [keyword, setKeyword] = useState("");
+    const [page, setPage] = useState(0);
 
     useEffect(() => {
-        window.ethereum.on('chainChanged', handleNetworkChange)
-        return () => { 
-            window.ethereum.removeListener('chainChanged', handleNetworkChange)
-        }
-    }, [handleNetworkChange])
+        const lux = networkId && getDeployData(networkId)?.lux;
+        setPlayers([]);
+        if (!lux) return;
+        let current = true;
+        getLogs({ address: lux, event: completed, fromBlock: "earliest" })
+            .then((logs) => current && setPlayers(rank(logs)))
+            .catch((err) => console.error("Failed to read the leaderboard", err));
+        return () => { current = false; };
+    }, [networkId]);
 
-    const fetchAndUpdate = useCallback(async () => { 
-        try {
-            if (!currentNetworkName) {
-                return;
-            }
-            const leaderboardNetworkName = getLeaderboardNetworkNameFromNetworkName(currentNetworkName)
-            const path = getLeaderboardPath(leaderboardNetworkName)
-            const response = await fetch(path)
-            if (!response.ok) throw new Error(`${path}: ${response.status}`)
-            const result = await response.json()
-            const playersWithRank = result.map(assignRank).filter(isScoreNonZero).map(assignAlias)
-            setPlayersWithRank(playersWithRank)
-            setSearchResult(playersWithRank)
-        } catch (err) { 
-            console.log("Failed to fetch leaderboard")
-        }
-    }, [currentNetworkName])
+    const found = keyword
+        ? players.filter((p) => p.player.toLowerCase().includes(keyword.toLowerCase()))
+        : players;
+    const pageCount = Math.ceil(found.length / playersPerPage);
 
-    // When network changes
-    useEffect(() => { 
-        fetchAndUpdate()
-    }, [fetchAndUpdate])
-
-    const getLeaderboardNetworkNameFromNetworkName = (networkName) => {
-        const networks = Object.entries(NETWORKS)
-        const network = networks.find(network => network[1]?.name === networkName)
-        const leaderboardNetworkName = network[0].toLowerCase().split("_")[0]
-        return capitaliseFirstLetter(leaderboardNetworkName);
-    }
-
-    const handlePageClick = (event) => {
-        const newOffset = (event.selected * playersPerPage) % searchResult.length;
-        setOffset(newOffset);
+    const search = (value) => {
+        setKeyword(value);
+        setPage(0);
     };
- 
-    const isKeywordMatching = (keyword) => (player) => {
-        keyword = keyword.toLowerCase()
-        return (
-            player.player.toLowerCase().includes(keyword) ||
-            player.alias.toLowerCase().includes(keyword)
-        )
-    }
-
-    const updateSearchResult = (keyword) => {
-        if (keyword === "") { 
-            setSearchResult(playersWithRank)
-            return;
-        }
-        setSearchKeyword(keyword)
-        const result = playersWithRank.filter(isKeywordMatching(keyword))
-        setSearchResult(result)
-        setOffset(0)
-    }
 
     return (
         <main className="boxes">
             <div className='leaderboard-body'>
-                    <div className="leaderboard-heading">
-                        <div className="leaderboard-title">Leaderboard</div>
-                        <Search
-                            searchKeyword={searchKeyword}
-                            onKeywordChange={updateSearchResult}
-                        />
-                    </div>
-                    <Headers />
-                    <div className='leaderboard-list-container'>
-                        <LeaderList players={currentItems} />
-                    </div>
-                    <div className='leaderboard-outer-container'>
-                        <ReactPaginate
-                            onPageChange={handlePageClick}
-                            pageCount={pageCount}
-                            {...reactPaginateProps}
-                        />
-                    </div>
+                <div className="leaderboard-heading">
+                    <div className="leaderboard-title">Leaderboard</div>
+                    <Search keyword={keyword} onKeywordChange={search} />
                 </div>
+                <Headers />
+                <div className='leaderboard-list-container'>
+                    <LeaderList players={found.slice(page * playersPerPage, (page + 1) * playersPerPage)} />
+                </div>
+                <div className='leaderboard-outer-container'>
+                    <Pager page={page} pages={pageCount} onPage={setPage} />
+                </div>
+            </div>
             <Footer />
         </main>
     )
 }
 
-const reactPaginateProps = {
-    pageRangeDisplayed: 5,
-    renderOnZeroPageCount:null,
-    breakLabel:"...",
-    nextLabel: <i className="fa-sharp fa-solid fa-arrow-right"></i>,
-    previousLabel: <i className="fa-sharp fa-solid fa-arrow-left"></i>,
-    containerClassName:"leaderboard-pagination-container",
-    pageLinkClassName:"leaderboard-pagination-page-item",
-    activeLinkClassName:"leaderboard-pagination-selected-page-item",
-    nextLinkClassName:"leaderboard-button-link",
-    previousLinkClassName:"leaderboard-button-link"
-}
-
-const assignRank = ((item, index) => { 
-    return {
-        ...item,
-        rank:index+1
-    }
-}) 
-
-const assignAlias = (player) => {
-    const alias = aliases[player.player.toLowerCase()]
-    if(!alias) return player
-    return {
-        ...player,
-        alias:alias
-    }
-}
-
-const isScoreNonZero = (player) => { 
-    return player.score !== 0
-}
-
-const capitaliseFirstLetter = (string) => { 
-    return string.charAt(0).toUpperCase() + string.slice(1)
+// Previous, up to five numbered pages around the current one, and next.
+function Pager({ page, pages, onPage }) {
+    if (pages < 2) return null;
+    const first = Math.max(0, Math.min(page - 2, pages - 5));
+    const shown = Array.from({ length: Math.min(5, pages) }, (_, i) => first + i);
+    const go = (to) => () => to >= 0 && to < pages && onPage(to);
+    return (
+        <ul className="leaderboard-pagination-container">
+            <li><a className="leaderboard-button-link" onClick={go(page - 1)}><i className="fa-sharp fa-solid fa-arrow-left"></i></a></li>
+            {shown.map((n) => (
+                <li key={n}>
+                    <a
+                        className={n === page ? "leaderboard-pagination-page-item leaderboard-pagination-selected-page-item" : "leaderboard-pagination-page-item"}
+                        onClick={go(n)}
+                    >
+                        {n + 1}
+                    </a>
+                </li>
+            ))}
+            <li><a className="leaderboard-button-link" onClick={go(page + 1)}><i className="fa-sharp fa-solid fa-arrow-right"></i></a></li>
+        </ul>
+    )
 }
 
 export default Leaderboard;

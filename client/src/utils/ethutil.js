@@ -140,6 +140,8 @@ export const deployContract = async ({ abi, bytecode }, args = []) => {
 export const getBalance = async (address) =>
   formatEther(await publicClient.getBalance({ address }));
 
+export const getLogs = (params) => publicClient.getLogs(params);
+
 export const getBlockNumber = async () => Number(await publicClient.getBlockNumber());
 
 export const getNetworkId = () => publicClient.getChainId();

@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@luxfi/logo": "1.0.11",
     "@sentry/react": "^10.75.2",
     "bad-words": "^4.1.5",
     "bootstrap": "^5.3.8",
@@ -14,7 +15,6 @@
     "react-dom": "^19.3.0",
     "react-loader-spinner": "^8.0.2",
     "react-markdown": "^10.1.0",
-    "react-paginate": "^8.3.0",
     "react-redux": "^9.3.0",
     "react-router": "^8.4.0",
     "redux": "^5.0.1",

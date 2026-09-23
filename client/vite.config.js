@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { getFaviconSVG } from "@luxfi/logo";
 
 const out = resolve(import.meta.dirname, "../contracts/out");
 
@@ -24,8 +25,21 @@ const artifact = {
   },
 };
 
+// The tab icon is the Lux mark from @luxfi/logo, written into the page as a
+// data URL so the package stays its only drawing.
+const favicon = {
+  name: "favicon",
+  transformIndexHtml: () => [
+    {
+      tag: "link",
+      attrs: { rel: "icon", type: "image/svg+xml", href: `data:image/svg+xml,${encodeURIComponent(getFaviconSVG())}` },
+      injectTo: "head-prepend",
+    },
+  ],
+};
+
 export default defineConfig({
-  plugins: [artifact, react()],
+  plugins: [artifact, favicon, react()],
   // One .env at the repository root serves the client and the forge scripts.
   envDir: "..",
   build: { outDir: "build" },

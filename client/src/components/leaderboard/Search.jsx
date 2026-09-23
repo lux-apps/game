@@ -11,7 +11,7 @@ const Search = (props) => {
                 <input
                     type="text"
                     className="stats-input form-control"
-                    placeholder="Search player address / alias"
+                    placeholder="Search player address"
                     value={keyword}
                     onChange={handleChange}
                 />

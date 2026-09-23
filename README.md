@@ -15,10 +15,6 @@ challenges.
 
 The game acts both as a tool for those interested in learning ethereum, and as a way to catalogue historical hacks as levels. There can be an infinite number of levels and the game does not require to be played in any particular order.
 
-## Deployed Versions
-
-You can find the current, official version at: [infinite.game](https://infinite.game)
-
 ## Install and Build
 
 There are three components to Lux that are needed to run/deploy in order to work with it locally:
@@ -34,7 +30,7 @@ In order to install, build, and run Lux locally, follow these instructions:
 1. Clone the repo and install dependencies:
 
     ```bash
-    git clone --recurse-submodules git@github.com:luxdefi/game.git
+    git clone --recurse-submodules git@github.com:lux-apps/game.git
     yarn install
     ```
 

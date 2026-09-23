@@ -10,6 +10,7 @@ import { withRouter } from "../hoc/withRouter";
 import { randGoodIcon, randBadIcon } from "../utils/^^";
 import { deployAdminContracts } from "../utils/deploycontract";
 import { switchNetwork } from "../utils/ethutil";
+import { Wordmark } from "@luxfi/logo";
 import {
   networkOnDeprecationOrDeprecated,
   isDeprecatedNetwork,
@@ -81,12 +82,7 @@ class App extends React.Component {
           {/* Main title and buttons */}
           <section className="titles">
             <a href={constants.PATH_ROOT}>
-              <img
-                id="the-lux"
-                src="../../imgs/the-lux.svg"
-                alt="The-Lux"
-                className="the-lux"
-              />
+              <Wordmark className="the-lux" height="auto" style={{ display: "block" }} />
             </a>
             <img
               src="../../imgs/arrow.svg"

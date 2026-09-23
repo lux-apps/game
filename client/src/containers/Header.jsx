@@ -10,6 +10,7 @@ import { ProgressBar } from "react-loader-spinner";
 import { svgFilter } from "../utils/svg";
 import { switchNetwork } from "../utils/ethutil";
 import LeaderIcon from "../components/leaderboard/LeaderIcon";
+import { Wordmark } from "@luxfi/logo";
 
 class Header extends React.Component {
   constructor(props) {
@@ -68,11 +69,6 @@ class Header extends React.Component {
         }
       }
 
-      // Change The Lux logo
-      var theLux = document.getElementById("the-lux");
-      if (theLux && theLux.style)
-        theLux.style.filter = this.state.dark ? svgFilter() : null;
-
       // Change Arrow
       let isArrowInPage = document.getElementById("arrow");
       if (isArrowInPage && isArrowInPage.style)
@@ -125,22 +121,6 @@ class Header extends React.Component {
         "--secondary-color",
         newSecondary
       );
-
-      // Change OpenZeppelin logo
-      var theLogo = document.getElementById("logo");
-      if (theLogo && theLogo.style)
-        theLogo.style.filter = !this.state.dark ? svgFilter() : null;
-
-      // // Change OpenZeppelin logo
-      // var theChristmashat = document.getElementById("christmas-hat")
-      // if (theChristmashat && theChristmashat.style) theChristmashat.style.filter = !this.state.dark
-      //   ? svgFilter()
-      //   : null;
-
-      // Change The Lux logo
-      var theLux = document.getElementById("the-lux");
-      if (theLux && theLux.style)
-        theLux.style.filter = !this.state.dark ? svgFilter() : null;
 
       // Change Arrow
       let isArrowInPage = document.getElementById("arrow");
@@ -204,23 +184,9 @@ class Header extends React.Component {
         </div>
         <center>
           <header>
-            <ul className="header-ul">
-              <li key={"hiring"} className="nav-links">
-                <a
-                  className="buttons hiring-button"
-                  href="https://grnh.se/dd38880f3us"
-                >
-                  <button>{strings.hiring}</button>
-                </a>
-              </li>
-            </ul>
-            <a className="logo-container" href="https://openzeppelin.com">
-              <img
-                id="logo"
-                className="logo"
-                src="../../imgs/oz-logo.svg"
-                alt="logo"
-              />
+            <ul className="header-ul"></ul>
+            <a className="logo-container" href="https://lux.network">
+              <Wordmark className="logo" height={34} />
             </a>
             {/* ---- Multi Dropdown Container */}
             <div
@@ -337,7 +303,7 @@ class Header extends React.Component {
                     <div className="dropdown-pill">
                       <a
                         className="contr"
-                        href="https://github.com/luxdefi/game#modify-or-add-new-languages"
+                        href="https://github.com/lux-apps/game#modify-or-add-new-languages"
                       >
                         {strings.contributeTranslation}
                       </a>
