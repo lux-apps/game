@@ -17,3 +17,4 @@ client/build/
 client/node_modules/
 client/src/gamedata/deploy.local.json
 .env
+contracts/broadcast/

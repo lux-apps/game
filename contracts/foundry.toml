@@ -8,6 +8,7 @@ solc_version = "0.8.37"
 evm_version = "cancun"
 optimizer = true
 optimizer_runs = 1000
+fs_permissions = [{ access = "read-write", path = "../client/src/gamedata" }]
 
 [fmt]
 line_length = 100
