@@ -127,7 +127,7 @@ export const loadContract = async (abi, address) => {
 export const deployContract = async ({ abi, bytecode }, args = []) => {
   const hash = await walletClient.deployContract({
     abi,
-    bytecode: bytecode.object,
+    bytecode,
     args,
     account: player,
     chain: null,

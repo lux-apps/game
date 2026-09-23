@@ -1,5 +1,5 @@
 import * as ethutil from "./ethutil";
-import { loadArtifact } from "./artifacts";
+import { loadArtifact, loadFactory } from "./artifacts";
 import {
   cacheContract,
   restoreContract,
@@ -12,9 +12,8 @@ const logger = (text) => {
   console.dir(`<<  ${text.toUpperCase()}  >>`);
 };
 
-async function deploySingleContract(file, name) {
-  const artifact = await loadArtifact(file, name);
-  logger(`Deploying ${name ?? file.split(".")[0]} contract`);
+async function deploySingleContract(name, artifact) {
+  logger(`Deploying ${name} contract`);
   return ethutil.contractAt(artifact.abi, await ethutil.deployContract(artifact));
 }
 
@@ -41,12 +40,15 @@ export async function deployAndRegisterLevel(level) {
     if (!confirmMainnetDeployment(chainId)) {
       return false;
     }
-    const levelContract = await deploySingleContract(level.levelContract);
+    const levelContract = await deploySingleContract(
+      level.levelContract.split(".")[0],
+      await loadArtifact(level.levelContract)
+    );
 
     logger(`Registering ${level.name} level on the lux contract `);
     // -- use the factory to register a new level since it owns the lux contract
     const factoryAddress = restoreContract(chainId)["factory"];
-    const { abi } = await loadArtifact("LocalFactory.sol", "Factory");
+    const { abi } = await loadFactory();
     await ethutil.contractAt(abi, factoryAddress).registerLevel(levelContract.address);
     // -- add this level factory instance to state
     updateCachedContract(level.deployId, levelContract.address, chainId);
@@ -66,7 +68,7 @@ export async function deployAdminContracts() {
     const gameData = restoreContract(chainId);
 
     // -- deploy factory contracts
-    const factory = await deploySingleContract("LocalFactory.sol", "Factory");
+    const factory = await deploySingleContract("Factory", await loadFactory());
     // -- query factory address for lux, proxy, proxyadmin and implementation
     const deployedCoreContracts = await Promise.all(
       CORE_CONTRACT_NAMES.map((coreContractName) => factory[coreContractName]())

@@ -2,7 +2,7 @@ import { formatEther } from 'viem';
 import { contractAt } from './ethutil';
 import { getDeployData } from './deploycontract';
 import { getLevelDetailsByAddress } from './getlevelsdata';
-import { abi as statisticsAbi } from '../../../contracts/out/Statistics.sol/Statistics.json';
+import { abi as statisticsAbi } from '../../../contracts/src/metrics/Statistics.sol?artifact';
 
 export const getLevelsSolvedByPlayer = async (playerAddress, networkId) => {
     if (!(playerAddress || networkId)) {

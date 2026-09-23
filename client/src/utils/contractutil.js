@@ -1,7 +1,7 @@
 import { isAddress } from "viem";
 import * as constants from "../constants";
 import { contractAt, getNetworkFromId, getNetworkId } from "./ethutil";
-import { levelSource, loadArtifact } from "./artifacts";
+import { levelSource, loadFactory } from "./artifacts";
 import { newGithubIssueUrl } from "./github";
 import { deployAdminContracts, deployAndRegisterLevel } from "./deploycontract";
 import gamedata from "../gamedata/gamedata.json";
@@ -59,7 +59,7 @@ window.transferOwnerShip = async function (newOwnerAddress) {
   console.log(`Transferring ownership of contracts to:${newOwnerAddress}`);
   const chainId = await getNetworkId();
   const { factory } = restoreContract(chainId);
-  const { abi } = await loadArtifact("LocalFactory.sol", "Factory");
+  const { abi } = await loadFactory();
   await contractAt(abi, factory).transferContractsOwnership(newOwnerAddress);
   updateCachedContract("owner", newOwnerAddress, chainId);
 };
