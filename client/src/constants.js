@@ -19,7 +19,7 @@ export const NETWORKS = {
     chain: sepolia,
     explorer: {
       apiKey: import.meta.env.VITE_SEPOLIA_EXPLORER_API_KEY,
-      apiHost: `https://api-sepolia.etherscan.io`,
+      apiHost: "https://api.etherscan.io/v2",
     },
   },
 };

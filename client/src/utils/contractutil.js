@@ -177,7 +177,7 @@ export const verifyContract = async (contractAddress, level, chainId) => {
   };
 
   try {
-    const response = await fetch(`${network.explorer.apiHost}/api`, requestOptions);
+    const response = await fetch(`${network.explorer.apiHost}/api?chainid=${chainId}`, requestOptions);
     const result = await response.json();
     if (result.status !== '1') {
       throw new Error(result.result);
