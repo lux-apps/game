@@ -1,7 +1,6 @@
 import * as actions from '../actions';
-import * as constants from '../constants';
 import { deployRemainingContracts, isLocalDeployed } from '../utils/contractutil';
-import { deployAdminContracts } from '../utils/deploycontract';
+import { deployAdminContracts, onPredeployedNetwork } from '../utils/deploycontract';
 import { networkOnDeprecationOrDeprecated } from '../utils/networkDeprecation';
 
 let elements = document.querySelectorAll('.progress-bar-wrapper');
@@ -31,13 +30,6 @@ const setNetwork = store => next => action => {
   }
 
   next(action)
-}
-
-export function onPredeployedNetwork(id) {
-  let onRightNetwork = false;
-  let allNetworkIds = Object.keys(constants.ID_TO_NETWORK).filter(id => constants.ID_TO_NETWORK[id] !== constants.NETWORKS.LOCAL.name).map((key) => Number(key))
-  onRightNetwork = allNetworkIds.includes(Number(id));
-  return onRightNetwork;
 }
 
 export default setNetwork

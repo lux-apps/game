@@ -2,7 +2,7 @@ import * as actions from '../actions';
 import * as constants from '../constants';
 
 import { loadTranslations } from '../utils/translations'
-import { onPredeployedNetwork } from './setNetwork';
+import { onPredeployedNetwork } from '../utils/deploycontract';
 import { getLevelKey, isLocalDeployed } from '../utils/contractutil';
 
 let language = localStorage.getItem('lang')

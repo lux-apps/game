@@ -105,7 +105,12 @@ const deployments = import.meta.glob("../gamedata/deploy.*.json", {
   import: "default",
 });
 
+const bundled = (networkId) =>
+  deployments[`../gamedata/deploy.${ID_TO_NETWORK[networkId]}.json`];
+
+// A network is predeployed when its deploy data ships with the game.
+export const onPredeployedNetwork = (networkId) => Boolean(bundled(networkId));
+
 // The bundled deployment of a network, or else what this browser deployed.
 export const getDeployData = (networkId) =>
-  deployments[`../gamedata/deploy.${ID_TO_NETWORK[networkId]}.json`] ??
-  restoreContract(networkId);
+  bundled(networkId) ?? restoreContract(networkId);
