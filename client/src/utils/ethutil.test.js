@@ -61,6 +61,8 @@ const provider = {
         const { functionName } = decodeFunctionData({ abi, data: params[0].data });
         return results[functionName]();
       }
+      case "eth_estimateGas":
+        return "0x7530"; // 30000
       case "eth_sendTransaction":
         sent.push(params[0]);
         return HASH;
@@ -102,6 +104,16 @@ describe("contractAt", () => {
     expect(sent[0].to.toLowerCase()).toBe(ADDRESS.toLowerCase());
     const call = decodeFunctionData({ abi, data: sent[0].data });
     expect(call).toEqual({ functionName: "authenticate", args: ["lux0"] });
+  });
+
+  test("gives transactions half again the gas estimate", async () => {
+    await contract().authenticate("lux0");
+    expect(BigInt(sent[0].gas)).toBe(45000n);
+  });
+
+  test("keeps a gas limit the caller names", async () => {
+    await contract().authenticate("lux0", { gas: 8191 * 3 });
+    expect(BigInt(sent[0].gas)).toBe(24573n);
   });
 
   test("takes a trailing options object for value and sender", async () => {

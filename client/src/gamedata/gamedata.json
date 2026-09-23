@@ -12,7 +12,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "0",
-      "instanceGas": 1500000,
       "author": "ajsantander"
     },
     {
@@ -27,7 +26,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "1",
-      "instanceGas": 450000,
       "author": "ajsantander"
     },
     {
@@ -42,7 +40,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "2",
-      "instanceGas": 450000,
       "author": "ajsantander"
     },
     {
@@ -57,7 +54,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "3",
-      "instanceGas": 320000,
       "author": "syncikin"
     },
     {
@@ -72,7 +68,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "4",
-      "instanceGas": 230000,
       "author": "syncikin"
     },
     {
@@ -87,7 +82,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "5",
-      "instanceGas": 330000,
       "author": "ajsantander"
     },
     {
@@ -102,7 +96,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "6",
-      "instanceGas": 250000,
       "author": "ajsantander"
     },
     {
@@ -117,7 +110,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "7",
-      "instanceGas": 150000,
       "author": "ajsantander"
     },
     {
@@ -132,7 +124,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "8",
-      "instanceGas": 200000,
       "author": "syncikin"
     },
     {
@@ -147,7 +138,6 @@
       "deployParams": [],
       "deployFunds": 0.001,
       "deployId": "9",
-      "instanceGas": 350000,
       "author": "ajsantander"
     },
     {
@@ -162,7 +152,6 @@
       "deployParams": [],
       "deployFunds": 0.001,
       "deployId": "10",
-      "instanceGas": 350000,
       "author": "ajsantander"
     },
     {
@@ -177,7 +166,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "11",
-      "instanceGas": 250000,
       "author": "martriay"
     },
     {
@@ -192,7 +180,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "12",
-      "instanceGas": 320000,
       "author": "ajsantander"
     },
     {
@@ -207,7 +194,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "13",
-      "instanceGas": 400000,
       "author": "0age",
       "verificationDetails": {
         "contractName": "GatekeeperOne",
@@ -230,7 +216,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "14",
-      "instanceGas": 250000,
       "author": "0age"
     },
     {
@@ -245,7 +230,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "15",
-      "instanceGas": 1300000,
       "author": "syncikin"
     },
     {
@@ -260,7 +244,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "16",
-      "instanceGas": 500000,
       "author": "AgeManning"
     },
     {
@@ -275,7 +258,6 @@
       "deployParams": [],
       "deployFunds": 0.001,
       "deployId": "17",
-      "instanceGas": 1100000,
       "author": "AgeManning"
     },
     {
@@ -290,7 +272,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "18",
-      "instanceGas": 200000,
       "author": "ajsantander"
     },
     {
@@ -305,7 +286,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "19",
-      "instanceGas": 520000,
       "author": "nczhu"
     },
     {
@@ -320,7 +300,6 @@
       "deployParams": [],
       "deployFunds": 0.001,
       "deployId": "20",
-      "instanceGas": 450000,
       "author": "AgeManning"
     },
     {
@@ -335,7 +314,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "21",
-      "instanceGas": 250000,
       "author": "34x4p08"
     },
     {
@@ -350,7 +328,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "22",
-      "instanceGas": 3600000,
       "author": "patrickalphac"
     },
     {
@@ -365,7 +342,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "23",
-      "instanceGas": 3600000,
       "author": "scottt"
     },
     {
@@ -380,7 +356,6 @@
       "deployParams": [],
       "deployFunds": 0.001,
       "deployId": "24",
-      "instanceGas": 3600000,
       "author": "openzeppelin"
     },
     {
@@ -395,7 +370,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "25",
-      "instanceGas": 2000000,
       "author": "openzeppelin"
     },
     {
@@ -410,7 +384,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "26",
-      "instanceGas": 5000000,
       "poweredBy": {
         "src": "../../imgs/forta.svg",
         "href": "https://forta.org"
@@ -429,7 +402,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "27",
-      "instanceGas": 2500000,
       "author": "ericnordelo"
     },
     {
@@ -444,7 +416,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "28",
-      "instanceGas": 1000000,
       "author": "KStasi"
     },
     {
@@ -459,7 +430,6 @@
       "deployParams": [],
       "deployFunds": 0,
       "deployId": "29",
-      "instanceGas": 250000,
       "author": "AgeManning"
     }
   ]

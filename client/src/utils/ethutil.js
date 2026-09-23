@@ -2,6 +2,8 @@ import {
   createPublicClient,
   createWalletClient,
   custom,
+  encodeDeployData,
+  encodeFunctionData,
   formatEther,
   getAbiItem,
   isAddress,
@@ -58,7 +60,13 @@ const txFields = ({ from, value, gas, gasPrice, maxFeePerGas, maxPriorityFeePerG
   return fields;
 };
 
-const confirm = async (hash) => {
+// Sends a transaction and resolves to its receipt, rejecting on a revert.
+// An exact estimate can fall short once the transaction is mined, so
+// without a given gas limit it carries half again the estimate, as
+// MetaMask does.
+const transact = async ({ gas, ...tx }) => {
+  gas ??= ((await publicClient.estimateGas(tx)) * 3n) / 2n;
+  const hash = await walletClient.sendTransaction({ ...tx, gas, chain: null });
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
   if (receipt.status === "reverted") throw new Error(`Transaction ${hash} reverted`);
   return receipt;
@@ -66,11 +74,11 @@ const confirm = async (hash) => {
 
 const invoke = async (address, fn, args, options) => {
   const { account, ...tx } = txFields(options);
-  const request = { address, abi: [fn], functionName: fn.name, args, account };
   if (fn.stateMutability === "view" || fn.stateMutability === "pure") {
-    return publicClient.readContract(request);
+    return publicClient.readContract({ address, abi: [fn], functionName: fn.name, args, account });
   }
-  return confirm(await walletClient.writeContract({ ...request, ...tx, chain: null }));
+  const data = encodeFunctionData({ abi: [fn], functionName: fn.name, args });
+  return transact({ account, to: address, data, ...tx });
 };
 
 // Picks the overload whose arity matches the arguments, then by argument
@@ -125,14 +133,8 @@ export const loadContract = async (abi, address) => {
 };
 
 export const deployContract = async ({ abi, bytecode }, args = []) => {
-  const hash = await walletClient.deployContract({
-    abi,
-    bytecode,
-    args,
-    account: player,
-    chain: null,
-  });
-  return (await confirm(hash)).contractAddress;
+  const data = encodeDeployData({ abi, bytecode, args });
+  return (await transact({ account: player, data })).contractAddress;
 };
 
 export const getBalance = async (address) =>
@@ -145,8 +147,8 @@ export const getNetworkId = () => publicClient.getChainId();
 export const getStorageAt = (address, slot) =>
   publicClient.getStorageAt({ address, slot: toHex(BigInt(slot)) });
 
-export const sendTransaction = async ({ to, data, ...options } = {}) =>
-  confirm(await walletClient.sendTransaction({ to, data, ...txFields(options), chain: null }));
+export const sendTransaction = ({ to, data, ...options } = {}) =>
+  transact({ to, data, ...txFields(options) });
 
 export const toWei = (ether) => parseEther(String(ether)).toString();
 
