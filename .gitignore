@@ -7,6 +7,7 @@ contracts/.env
 
 # Contracts
 contracts/build/
+contracts/out/
 contracts/cache/
 contracts/node_modules/
 contracts/.openzeppelin/
