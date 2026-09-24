@@ -15,6 +15,10 @@ challenges.
 
 The game acts both as a tool for those interested in learning ethereum, and as a way to catalogue historical hacks as levels. There can be an infinite number of levels and the game does not require to be played in any particular order.
 
+## Play
+
+[game.lux.network](https://game.lux.network), on Lux Testnet.
+
 ## Install and Build
 
 There are three components to Lux that are needed to run/deploy in order to work with it locally:
