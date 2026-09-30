@@ -27,6 +27,9 @@ jobs:
     - run: yarn test:client
 
   site:
+    permissions:
+      contents: read
+      id-token: write
     needs: test
     if: github.event_name == 'push'
     runs-on: linux-amd64
